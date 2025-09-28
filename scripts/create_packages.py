@@ -40,7 +40,7 @@ class PackageCreator:
             'webhook': {
                 'source_dir': self.lambda_functions_dir / 'webhook',
                 'output_file': self.output_dir / 'webhook-deployment.zip',
-                'dependencies': ['requests', 'python-dateutil', 'jsonschema', 'cryptography']
+                'dependencies': ['feedparser', 'requests', 'python-dateutil', 'jsonschema', 'cryptography']
             }
         }
 

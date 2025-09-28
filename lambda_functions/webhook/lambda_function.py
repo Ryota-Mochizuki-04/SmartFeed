@@ -9,6 +9,7 @@ import json
 import logging
 import traceback
 import boto3
+import feedparser
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 from urllib.parse import urlparse

@@ -189,9 +189,31 @@ sudo installer -pkg AWSCLIV2.pkg -target /
 
 #### Windows
 
+**方法1: Windows インストーラー（推奨）**
 1. [AWS CLI Windows インストーラー](https://awscli.amazonaws.com/AWSCLIV2.msi) をダウンロード
 2. インストーラーを実行
-3. コマンドプロンプトまたは PowerShell で確認: `aws --version`
+3. PowerShell で確認:
+   ```powershell
+   aws --version
+   ```
+
+**方法2: PowerShell（管理者権限）**
+```powershell
+# Chocolatey を使用（事前にChocolateyインストールが必要）
+choco install awscli
+
+# または winget を使用（Windows 10 1709以降）
+winget install Amazon.AWSCLI
+```
+
+**方法3: Python pip を使用**
+```powershell
+# Python pip経由でインストール
+pip install awscli
+
+# 確認
+aws --version
+```
 
 ### 3.2 インストール確認
 

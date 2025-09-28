@@ -61,6 +61,7 @@
 
 ### 1.3 診断コマンド集
 
+##### Linux/macOS
 ```bash
 # 完全診断実行
 ./scripts/setup-environment.sh --validate
@@ -72,6 +73,23 @@
 
 # ログ監視
 ./scripts/dev-utils.sh tail-logs notifier
+```
+
+##### Windows
+```powershell
+# 注意: Windows環境では独自スクリプト実行にGit BashまたはWSLを推奨
+
+# Git Bashを使用（推奨）
+bash ./scripts/setup-environment.sh --validate
+bash ./scripts/dev-utils.sh test-lambda notifier
+
+# PowerShellでAWSコマンド直接実行
+# Lambda関数テスト
+aws lambda invoke --function-name "rss-notifier-prod" --region $env:AWS_REGION response.json
+Get-Content response.json
+
+# ログ確認
+aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/rss" --region $env:AWS_REGION
 ```
 
 ---
@@ -149,12 +167,26 @@ ERROR - 依存関係インストール失敗: No module named 'feedparser'
 **解決策:**
 
 1. **Python環境確認**
+
+   ##### Linux/macOS
    ```bash
    # Python バージョン確認
    python3.12 --version
 
    # pip 更新
    python3.12 -m pip install --upgrade pip
+   ```
+
+   ##### Windows
+   ```powershell
+   # Python バージョン確認
+   python --version
+
+   # pip 更新（管理者権限推奨）
+   python -m pip install --upgrade pip
+
+   # 権限エラーの場合
+   python -m pip install --upgrade pip --user
    ```
 
 2. **依存関係の手動インストール**

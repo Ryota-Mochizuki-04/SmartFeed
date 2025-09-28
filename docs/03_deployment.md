@@ -31,12 +31,22 @@
 
 ### 1.2 環境要件
 
+#### Linux/macOS
 ```
 ✅ Ubuntu/Debian Linux (推奨) または macOS
 ✅ Python 3.12+
 ✅ AWS CLI v2
 ✅ Git
 ✅ curl, wget, unzip, jq
+```
+
+#### Windows
+```
+✅ Windows 10/11
+✅ Python 3.12+
+✅ AWS CLI v2
+✅ Git for Windows または GitHub Desktop
+✅ PowerShell 5.1+ または PowerShell Core 7+
 ```
 
 ### 1.3 アカウント要件
@@ -66,7 +76,7 @@ git clone https://github.com/Ryota-Mochizuki-04/SmartFeed
 cd SmartFeed
 ```
 
-> **注意**: このシステムは既にデプロイ済みで稼働中です。新規デプロイを行う場合は、既存のスタックを削除するか、異なるスタック名を使用してください。
+> **注意**: 既存のAWSアカウントに同名のスタックが存在する場合は、異なるスタック名を使用するか、既存スタックを削除してからデプロイしてください。
 
 #### 方法2: ZIPファイルをダウンロード
 
@@ -145,7 +155,9 @@ ls -la scripts/
 
 ### 3.2 手動セットアップ
 
-#### 必須ツールインストール（Ubuntu/Debian）
+#### 必須ツールインストール
+
+##### Ubuntu/Debian
 ```bash
 # パッケージ更新
 sudo apt update
@@ -161,13 +173,52 @@ sudo ./aws/install
 rm -rf awscliv2.zip aws/
 ```
 
+##### Windows
+```powershell
+# 管理者権限でPowerShellを開いて実行
+
+# Python 3.12インストール（Microsoft Store推奨）
+# または python.org からダウンロード
+python --version  # 確認
+
+# Git for Windowsインストール
+# https://git-scm.com/download/win からダウンロード
+
+# AWS CLI v2インストール
+# 方法1: MSIインストーラー（推奨）
+# https://awscli.amazonaws.com/AWSCLIV2.msi からダウンロード
+
+# 方法2: winget使用
+winget install Amazon.AWSCLI
+
+# 方法3: Chocolatey使用
+choco install awscli
+
+# 確認
+aws --version
+git --version
+```
+
 #### 環境変数ファイル作成
+
+##### Linux/macOS
 ```bash
 # 環境変数ファイル作成
 cp config/env.template .env
 
 # エディタで編集
 nano .env
+```
+
+##### Windows
+```powershell
+# 環境変数ファイル作成
+Copy-Item config\env.template .env
+
+# エディタで編集（お好きなエディタを使用）
+notepad .env
+# または
+code .env  # VS Codeの場合
 ```
 
 `.env` ファイルに実際の値を設定：
@@ -194,6 +245,7 @@ export ENVIRONMENT="prod"
 
 ### 3.3 環境変数読み込み
 
+##### Linux/macOS
 ```bash
 # 環境変数読み込み
 source .env
@@ -204,15 +256,39 @@ echo "Stack Name: $STACK_NAME"
 echo "LINE Channel Secret (最初の5文字): ${LINE_CHANNEL_SECRET:0:5}***"
 ```
 
+##### Windows
+```powershell
+# 環境変数読み込み（PowerShellの場合）
+Get-Content .env | ForEach-Object {
+    if ($_ -match '^([^=]+)=(.*)$') {
+        [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')
+    }
+}
+
+# 設定確認（一部のみ表示）
+Write-Host "AWS Region: $env:AWS_REGION"
+Write-Host "Stack Name: $env:STACK_NAME"
+Write-Host "LINE Channel Secret (最初の5文字): $($env:LINE_CHANNEL_SECRET.Substring(0,5))***"
+```
+
+> **Windows注意点**: 環境変数の読み込み方法が異なるため、デプロイスクリプト実行前に必ず上記コマンドで環境変数を設定してください。
+
 ---
 
 ## 4. RSS設定ファイル作成
 
 ### 4.1 設定ファイルテンプレート
 
+##### Linux/macOS
 ```bash
 # テンプレートから設定ファイル作成
 cp config/rss-config.json.template config/rss-config.json
+```
+
+##### Windows
+```powershell
+# テンプレートから設定ファイル作成
+Copy-Item config\rss-config.json.template config\rss-config.json
 ```
 
 ### 4.2 RSS設定編集
@@ -270,10 +346,26 @@ cp config/rss-config.json.template config/rss-config.json
 
 ### 4.3 設定ファイル検証
 
+##### Linux/macOS
 ```bash
 # JSON構文確認
 python3.12 -m json.tool config/rss-config.json > /dev/null
 echo "RSS設定ファイルの構文は正常です"
+```
+
+##### Windows
+```powershell
+# JSON構文確認
+python -m json.tool config\rss-config.json > $null
+Write-Host "RSS設定ファイルの構文は正常です"
+
+# または、PowerShellのテスト機能を使用
+try {
+    Get-Content config\rss-config.json | ConvertFrom-Json > $null
+    Write-Host "RSS設定ファイルの構文は正常です" -ForegroundColor Green
+} catch {
+    Write-Host "RSS設定ファイルに構文エラーがあります: $($_.Exception.Message)" -ForegroundColor Red
+}
 ```
 
 ---

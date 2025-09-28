@@ -56,6 +56,8 @@ RSSフィードから新着記事を自動取得し、LINEメッセージとし�
 ## 📋 前提条件
 
 ### 必要なツール
+
+#### Linux/macOS
 ```bash
 # Python 3.12+
 python3.12 --version  # Python 3.12.x
@@ -66,6 +68,28 @@ aws --version  # aws-cli/2.x.x
 # zip コマンド
 zip --version
 ```
+
+#### Windows
+```powershell
+# Python 3.12+
+python --version  # Python 3.12.x
+
+# AWS CLI v2
+aws --version  # aws-cli/2.x.x
+
+# PowerShell（標準で利用可能）
+$PSVersionTable.PSVersion
+```
+
+**サポート対象OS:**
+- ✅ Ubuntu/Debian Linux（推奨）
+- ✅ macOS（Intel/Apple Silicon）
+- ✅ Windows 10/11（PowerShell/コマンドプロンプト）
+
+> **Windows ユーザーへの注意**:
+> - 管理者権限でPowerShellを実行することを推奨します
+> - Git Bash または WSL (Windows Subsystem for Linux) の使用でより快適に開発できます
+> - 環境変数の読み込み方法が異なるため、ドキュメント内のWindows向け手順を必ず確認してください
 
 ### 必要なアカウント
 - **AWSアカウント**: Lambda、S3、API Gateway等の利用
@@ -103,14 +127,14 @@ source .env
 ./scripts/deploy.sh
 ```
 
-### 🎉 現在の稼働状況
+### 🎉 デプロイ後の構成
 
-システムは既にデプロイ済みで正常稼働中です：
+デプロイ完了後のシステム構成：
 
 - **Webhook URL**: `https://[API-ID].execute-api.ap-northeast-1.amazonaws.com/prod/webhook`
 - **S3バケット**: `rss-line-notifier-prod-[ACCOUNT-ID]`
 - **通知スケジュール**: 毎日12:30と21:00（JST）
-- **デプロイ地域**: Asia Pacific (Tokyo) - ap-northeast-1
+- **推奨デプロイ地域**: Asia Pacific (Tokyo) - ap-northeast-1
 
 > 実際のURL・バケット名は、デプロイ時にAWSによって自動生成されます。
 
