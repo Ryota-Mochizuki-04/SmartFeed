@@ -1,0 +1,58 @@
+{
+  "version": "2.1",
+  "updated_at": "2024-01-01T00:00:00Z",
+  "config": {
+    "max_feeds": 100,
+    "max_articles_per_notification": 30,
+    "notification_hours": [12.5, 21.0],
+    "timezone": "Asia/Tokyo",
+    "retry_config": {
+      "max_retries": 3,
+      "retry_delay": 5,
+      "backoff_multiplier": 2.0
+    },
+    "cache_config": {
+      "feed_cache_ttl": 300,
+      "image_cache_ttl": 3600
+    },
+    "notification_config": {
+      "enable_images": true,
+      "enable_priority_ranking": true,
+      "enable_reading_time": true,
+      "max_carousel_items": 10
+    }
+  },
+  "feeds": [
+    {
+      "id": "feed_sample_001",
+      "url": "https://qiita.com/popular/items/feed",
+      "title": "Qiita - 人気の記事",
+      "category": "プログラミング",
+      "enabled": true,
+      "priority": 1,
+      "added_at": "2024-01-01T00:00:00Z",
+      "last_checked": null,
+      "check_count": 0,
+      "success_rate": 1.0,
+      "metadata": {
+        "description": "プログラマの技術情報共有サービス",
+        "language": "ja",
+        "feed_type": "rss2.0",
+        "update_frequency": "hourly"
+      },
+      "validation": {
+        "last_validated": "2024-01-01T00:00:00Z",
+        "is_valid": true,
+        "error_count": 0,
+        "last_error": null
+      }
+    }
+  ],
+  "statistics": {
+    "total_feeds": 1,
+    "active_feeds": 1,
+    "total_articles_processed": 0,
+    "total_notifications_sent": 0,
+    "avg_articles_per_notification": 0
+  }
+}

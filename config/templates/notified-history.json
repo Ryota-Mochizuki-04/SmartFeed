@@ -1,0 +1,27 @@
+{
+  "version": "2.1",
+  "updated_at": "2024-01-01T00:00:00Z",
+  "config": {
+    "max_history_size": 1000,
+    "cleanup_days": 30,
+    "auto_cleanup": true,
+    "duplicate_detection": {
+      "method": "url_hash",
+      "similarity_threshold": 0.9
+    }
+  },
+  "history": [],
+  "statistics": {
+    "total_notifications": 0,
+    "oldest_record": null,
+    "last_cleanup": "2024-01-01T00:00:00Z",
+    "avg_daily_notifications": 0,
+    "category_stats": {
+      "プログラミング": 0,
+      "テクノロジー": 0,
+      "マンガ・エンタメ": 0,
+      "ニュース": 0,
+      "その他": 0
+    }
+  }
+}

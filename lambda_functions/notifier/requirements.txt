@@ -1,0 +1,12 @@
+# RSS LINE Notifier - Notifier Lambda Requirements
+# Python 3.12 対応
+# boto3とrequestsはLambdaランタイムで提供されるため除外
+
+# RSS解析
+feedparser>=6.0.11
+
+# 日付処理
+python-dateutil>=2.9.0
+
+# JSONスキーマ検証
+jsonschema>=4.20.0

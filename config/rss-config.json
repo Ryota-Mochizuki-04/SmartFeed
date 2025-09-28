@@ -1,0 +1,49 @@
+{
+  "version": "2.1",
+  "feeds": [
+    {
+      "id": "techcrunch",
+      "url": "https://techcrunch.com/feed/",
+      "title": "TechCrunch",
+      "category": "テクノロジー",
+      "enabled": true,
+      "priority": 1
+    },
+    {
+      "id": "itmedia",
+      "url": "https://www.itmedia.co.jp/news/rss/rss20.xml",
+      "title": "ITmedia NEWS",
+      "category": "テクノロジー",
+      "enabled": true,
+      "priority": 2
+    },
+    {
+      "id": "github-blog",
+      "url": "https://github.blog/feed/",
+      "title": "GitHub Blog",
+      "category": "プログラミング",
+      "enabled": true,
+      "priority": 1
+    }
+  ],
+  "settings": {
+    "check_interval_minutes": 30,
+    "max_articles_per_notification": 10,
+    "enable_smart_filtering": true,
+    "notification_time_range": {
+      "start": "07:00",
+      "end": "23:00"
+    }
+  },
+  "analysis": {
+    "enable_ai_categorization": true,
+    "keyword_extraction": true,
+    "duplicate_detection_threshold": 0.8
+  },
+  "statistics": {
+    "total_notifications_sent": 0,
+    "total_articles_processed": 0,
+    "avg_articles_per_notification": 0.0,
+    "last_execution": null
+  }
+}

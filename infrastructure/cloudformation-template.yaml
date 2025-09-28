@@ -1,0 +1,327 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "RSS LINE Notifier - Serverless RSS to LINE Notification System (Python 3.12)"
+
+Parameters:
+  LineChannelToken:
+    Type: String
+    Description: LINE Channel Access Token
+    NoEcho: true
+    MinLength: 100
+
+  LineChannelSecret:
+    Type: String
+    Description: LINE Channel Secret
+    NoEcho: true
+    MinLength: 32
+
+  LineUserId:
+    Type: String
+    Description: LINE User ID for notifications
+    MinLength: 33
+    MaxLength: 33
+    AllowedPattern: "^U[0-9a-f]{32}$"
+
+  NotificationTime1:
+    Type: String
+    Description: First notification time (UTC cron expression)
+    Default: "30 03 * * ? *"
+
+  NotificationTime2:
+    Type: String
+    Description: Second notification time (UTC cron expression)
+    Default: "00 12 * * ? *"
+
+  Environment:
+    Type: String
+    Description: Environment name
+    Default: "v1"
+    AllowedValues:
+      - "dev"
+      - "staging"
+      - "v1"
+      - "prod"
+
+  LogLevel:
+    Type: String
+    Description: Lambda function log level
+    Default: "INFO"
+    AllowedValues:
+      - "DEBUG"
+      - "INFO"
+      - "WARN"
+      - "ERROR"
+
+Resources:
+  # S3 Bucket for RSS configuration and notification history
+  RssNotifierBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "rss-line-notifier-${Environment}-${AWS::AccountId}"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+
+  # IAM Role for Notifier Lambda
+  NotifierLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "NotifierLambdaRole-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3AccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${RssNotifierBucket}/*"
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${RssNotifierBucket}"
+
+  # IAM Role for Webhook Lambda
+  WebhookLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "WebhookLambdaRole-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: S3AccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${RssNotifierBucket}/*"
+              - Effect: Allow
+                Action:
+                  - s3:ListBucket
+                Resource: !Sub "arn:aws:s3:::${RssNotifierBucket}"
+        - PolicyName: LambdaInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:rss-notifier-${Environment}"
+
+  # Notifier Lambda Function
+  NotifierLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "rss-notifier-${Environment}"
+      Runtime: python3.12
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt NotifierLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'body': 'Placeholder for Notifier Lambda'
+              }
+      Environment:
+        Variables:
+          LINE_TOKEN: !Ref LineChannelToken
+          LINE_USER_ID: !Ref LineUserId
+          BUCKET_NAME: !Ref RssNotifierBucket
+          LOG_LEVEL: !Ref LogLevel
+          MAX_FEEDS: "100"
+          ARTICLE_AGE_HOURS: "24"
+          REQUEST_TIMEOUT: "30"
+          PARALLEL_WORKERS: "10"
+      MemorySize: 512
+      Timeout: 900
+
+  # Webhook Lambda Function
+  WebhookLambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "rss-webhook-${Environment}"
+      Runtime: python3.12
+      Handler: lambda_function.lambda_handler
+      Role: !GetAtt WebhookLambdaRole.Arn
+      Code:
+        ZipFile: |
+          def lambda_handler(event, context):
+              return {
+                  'statusCode': 200,
+                  'body': 'Placeholder for Webhook Lambda'
+              }
+      Environment:
+        Variables:
+          LINE_TOKEN: !Ref LineChannelToken
+          LINE_CHANNEL_SECRET: !Ref LineChannelSecret
+          BUCKET_NAME: !Ref RssNotifierBucket
+          NOTIFIER_FUNCTION_NAME: !Sub "rss-notifier-${Environment}"
+          LOG_LEVEL: !Ref LogLevel
+          LOADING_TIMEOUT: "5"
+          MAX_COMMAND_LENGTH: "1000"
+      MemorySize: 256
+      Timeout: 30
+
+  # API Gateway for LINE Webhook
+  WebhookApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "rss-line-notifier-api-${Environment}"
+      Description: "API Gateway for LINE Webhook"
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  WebhookApiResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref WebhookApi
+      ParentId: !GetAtt WebhookApi.RootResourceId
+      PathPart: webhook
+
+  WebhookApiMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref WebhookApi
+      ResourceId: !Ref WebhookApiResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebhookLambdaFunction.Arn}/invocations"
+
+  WebhookApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: WebhookApiMethod
+    Properties:
+      RestApiId: !Ref WebhookApi
+      StageName: prod
+
+  # Lambda permission for API Gateway
+  WebhookLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref WebhookLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebhookApi}/*/POST/webhook"
+
+  # EventBridge Rules for scheduled notifications
+  NotificationSchedule1:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "rss-notification-schedule1-${Environment}"
+      Description: "First daily RSS notification trigger"
+      ScheduleExpression: !Sub "cron(${NotificationTime1})"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt NotifierLambdaFunction.Arn
+          Id: "NotifierTarget1"
+          Input: '{"source": "eventbridge", "schedule": "morning"}'
+
+  NotificationSchedule2:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "rss-notification-schedule2-${Environment}"
+      Description: "Second daily RSS notification trigger"
+      ScheduleExpression: !Sub "cron(${NotificationTime2})"
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt NotifierLambdaFunction.Arn
+          Id: "NotifierTarget2"
+          Input: '{"source": "eventbridge", "schedule": "evening"}'
+
+  # Lambda permissions for EventBridge
+  NotifierLambdaPermission1:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref NotifierLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt NotificationSchedule1.Arn
+
+  NotifierLambdaPermission2:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref NotifierLambdaFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt NotificationSchedule2.Arn
+
+  # CloudWatch Log Groups
+  NotifierLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/rss-notifier-${Environment}"
+      RetentionInDays: 14
+
+  WebhookLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/rss-webhook-${Environment}"
+      RetentionInDays: 14
+
+Outputs:
+  WebhookApiUrl:
+    Description: "LINE Webhook API URL"
+    Value: !Sub "https://${WebhookApi}.execute-api.${AWS::Region}.amazonaws.com/prod/webhook"
+    Export:
+      Name: !Sub "${AWS::StackName}-WebhookApiUrl"
+
+  S3BucketName:
+    Description: "S3 Bucket for RSS configuration and history"
+    Value: !Ref RssNotifierBucket
+    Export:
+      Name: !Sub "${AWS::StackName}-S3BucketName"
+
+  NotifierFunctionName:
+    Description: "Notifier Lambda Function Name"
+    Value: !Ref NotifierLambdaFunction
+    Export:
+      Name: !Sub "${AWS::StackName}-NotifierFunctionName"
+
+  WebhookFunctionName:
+    Description: "Webhook Lambda Function Name"
+    Value: !Ref WebhookLambdaFunction
+    Export:
+      Name: !Sub "${AWS::StackName}-WebhookFunctionName"
+
+  NotificationSchedules:
+    Description: "Notification schedule times (UTC)"
+    Value: !Sub "${NotificationTime1} and ${NotificationTime2}"
+    Export:
+      Name: !Sub "${AWS::StackName}-NotificationSchedules"

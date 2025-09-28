@@ -1,0 +1,12 @@
+# RSS LINE Notifier - Webhook Lambda Requirements
+# Python 3.12 対応
+# boto3とrequestsはLambdaランタイムで提供されるため除外
+
+# 日付処理
+python-dateutil>=2.9.0
+
+# JSONスキーマ検証
+jsonschema>=4.20.0
+
+# 暗号化・署名検証
+cryptography>=41.0.0
