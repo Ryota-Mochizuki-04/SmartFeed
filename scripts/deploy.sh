@@ -1,8 +1,8 @@
 #!/bin/bash
-"""
-RSS LINE Notifier - 自動デプロイスクリプト
-AWS Lambda関数の自動ビルド・デプロイを行うスクリプト
-"""
+#
+# RSS LINE Notifier - 自動デプロイスクリプト
+# AWS Lambda関数の自動ビルド・デプロイを行うスクリプト
+#
 
 set -e  # エラー時に終了
 

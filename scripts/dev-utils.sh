@@ -1,8 +1,8 @@
 #!/bin/bash
-"""
-RSS LINE Notifier - 開発ユーティリティスクリプト
-開発・テスト・メンテナンス用のユーティリティ機能
-"""
+#
+# RSS LINE Notifier - 開発ユーティリティスクリプト
+# 開発・テスト・メンテナンス用のユーティリティ機能
+#
 
 set -e
 
@@ -134,30 +134,34 @@ test_lambda() {
     log_info "Lambda関数のテストを実行します: $function_name"
 
     # テストイベント作成
-    local test_event
+    local test_event_file="/tmp/test-event.json"
     if [ "$function_type" = "notifier" ]; then
-        test_event='{
-            "source": "test",
-            "detail-type": "Scheduled Event",
-            "detail": {}
-        }'
+        cat > "$test_event_file" << 'EOF'
+{
+    "source": "test",
+    "detail-type": "Scheduled Event",
+    "detail": {}
+}
+EOF
     else
-        test_event='{
-            "httpMethod": "POST",
-            "headers": {
-                "Content-Type": "application/json",
-                "X-Line-Signature": "test-signature"
-            },
-            "body": "{\"events\":[]}"
-        }'
+        cat > "$test_event_file" << 'EOF'
+{
+    "httpMethod": "POST",
+    "headers": {
+        "Content-Type": "application/json",
+        "X-Line-Signature": "test-signature"
+    },
+    "body": "{\"events\":[]}"
+}
+EOF
     fi
 
     # Lambda実行
-    log_dev "テストイベント: $test_event"
+    log_dev "テストイベント: $(cat $test_event_file)"
 
     aws lambda invoke \
         --function-name "$function_name" \
-        --payload "$test_event" \
+        --payload file://"$test_event_file" \
         --region "$REGION" \
         /tmp/lambda-response.json
 
