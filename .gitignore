@@ -127,3 +127,4 @@ dmypy.json
 local_test.py
 debug_*.py
 test_*.py
+CLAUDE.md

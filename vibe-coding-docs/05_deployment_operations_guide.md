@@ -3,12 +3,14 @@
 ## 🚀 デプロイメント概要
 
 ### デプロイメント戦略
-- **インフラ**: CloudFormation によるIaC (Infrastructure as Code)
+
+- **インフラ**: CloudFormation による IaC (Infrastructure as Code)
 - **アプリケーション**: Lambda ZIP パッケージによるコードデプロイ
 - **設定管理**: 環境変数 + CloudFormation パラメータ
 - **バージョニング**: 関数名サフィックス方式 (v1, v2...)
 
 ### 全体フロー
+
 ```
 1. 前提条件確認 → 2. LINE設定 → 3. AWS設定 → 4. インフラ構築 → 5. アプリケーションデプロイ → 6. 初期設定 → 7. 動作確認
 ```
@@ -16,6 +18,7 @@
 ## 📋 前提条件・準備
 
 ### 1. 必要なツール・環境
+
 ```bash
 # AWS CLI v2
 aws --version  # aws-cli/2.x.x or higher
@@ -31,7 +34,9 @@ jq --version
 ```
 
 ### 2. AWS 権限要件
-必要なIAMポリシー:
+
+必要な IAM ポリシー:
+
 ```json
 {
   "Version": "2012-10-17",
@@ -56,7 +61,9 @@ jq --version
 ```
 
 ### 3. LINE 設定
+
 LINE Developer Console での設定項目:
+
 - **Channel Access Token** 取得
 - **Channel Secret** 取得
 - **Webhook URL** 設定 (デプロイ後)
@@ -65,6 +72,7 @@ LINE Developer Console での設定項目:
 ## 🔧 初回セットアップ（完全新規）
 
 ### Step 1: リポジトリクローン・セットアップ
+
 ```bash
 # リポジトリクローン
 git clone <repository-url>
@@ -81,6 +89,7 @@ pip install -r lambda_functions/webhook/requirements.txt
 ```
 
 ### Step 2: パラメータファイル作成
+
 ```bash
 # パラメータテンプレートコピー
 cp infrastructure/parameters.json.template infrastructure/parameters.json
@@ -90,6 +99,7 @@ vim infrastructure/parameters.json
 ```
 
 **parameters.json 設定例**:
+
 ```json
 [
   {
@@ -116,6 +126,7 @@ vim infrastructure/parameters.json
 ```
 
 ### Step 3: Lambda デプロイパッケージ作成
+
 ```bash
 # パッケージ作成スクリプト実行
 python scripts/create_packages.py
@@ -127,6 +138,7 @@ ls -la *.zip
 ```
 
 ### Step 4: CloudFormation スタック作成
+
 ```bash
 # Git Bash の場合のパス変換無効化
 export MSYS_NO_PATHCONV=1
@@ -147,6 +159,7 @@ aws cloudformation describe-stacks \
 ```
 
 ### Step 5: Lambda 関数コードアップロード
+
 ```bash
 # Notifier Lambda 更新
 aws lambda update-function-code \
@@ -161,7 +174,8 @@ aws lambda update-function-code \
   --region ap-northeast-1
 ```
 
-### Step 6: API Gateway URL 取得 & LINE設定
+### Step 6: API Gateway URL 取得 & LINE 設定
+
 ```bash
 # API Gateway URL 取得
 aws cloudformation describe-stacks \
@@ -174,11 +188,13 @@ aws cloudformation describe-stacks \
 ```
 
 **LINE Developer Console での設定**:
-1. Messaging API Settings → Webhook URL に上記URLを設定
+
+1. Messaging API Settings → Webhook URL に上記 URL を設定
 2. Webhook の Use webhook を Enable に変更
 3. Auto-reply messages を Disable に変更
 
 ### Step 7: 初期設定・動作確認
+
 ```bash
 # 手動実行テスト
 aws lambda invoke \
@@ -197,6 +213,7 @@ aws logs tail /aws/lambda/rss-notifier-v1 --follow --region ap-northeast-1
 ## 🔄 コード更新デプロイ（通常運用）
 
 ### 日常的な更新フロー
+
 ```bash
 # 1. コード変更・テスト
 python tests/test_functions.py
@@ -224,6 +241,7 @@ aws lambda invoke \
 ```
 
 ### 自動化スクリプト例
+
 ```bash
 #!/bin/bash
 # deploy.sh - 自動デプロイスクリプト
@@ -270,6 +288,7 @@ fi
 ## 🏗️ インフラ更新・拡張
 
 ### CloudFormation テンプレート更新
+
 ```bash
 # テンプレート変更後の更新
 aws cloudformation update-stack \
@@ -286,6 +305,7 @@ aws cloudformation describe-stack-events \
 ```
 
 ### 環境変数更新
+
 ```bash
 # Notifier Lambda の環境変数更新
 aws lambda update-function-configuration \
@@ -312,6 +332,7 @@ aws lambda update-function-configuration \
 ## 📊 監視・運用
 
 ### CloudWatch メトリクス監視
+
 ```bash
 # Lambda実行回数確認
 aws cloudwatch get-metric-statistics \
@@ -337,6 +358,7 @@ aws cloudwatch get-metric-statistics \
 ```
 
 ### ログ分析・トラブルシューティング
+
 ```bash
 # エラーログ検索
 aws logs filter-log-events \
@@ -358,6 +380,7 @@ aws logs tail /aws/lambda/rss-notifier-v1 --follow --region ap-northeast-1
 ```
 
 ### データベース（S3）管理
+
 ```bash
 # RSS設定確認
 aws s3 cp s3://rss-line-notifier-v1-{AccountId}/rss-list.json - | jq .
@@ -379,6 +402,7 @@ aws s3 cp s3://rss-line-notifier-v1-{AccountId}/backups/20240101/rss-list.json \
 ### よくある問題と解決法
 
 #### 1. Lambda デプロイエラー
+
 ```bash
 # 問題: ZIP ファイルサイズ超過
 # 解決: 不要ファイル除外、レイヤー使用検討
@@ -391,6 +415,7 @@ unzip -l notifier-deployment.zip | sort -k4 -nr | head -20
 ```
 
 #### 2. LINE Webhook 署名エラー
+
 ```bash
 # ログでエラー詳細確認
 aws logs filter-log-events \
@@ -408,6 +433,7 @@ aws lambda update-function-configuration \
 ```
 
 #### 3. RSS フィード取得失敗
+
 ```bash
 # 手動でRSSフィード確認
 curl -I "https://example.com/feed.xml"
@@ -420,6 +446,7 @@ aws lambda update-function-configuration \
 ```
 
 #### 4. S3 アクセス権限エラー
+
 ```bash
 # IAM ロール確認
 aws iam get-role \
@@ -433,6 +460,7 @@ aws s3api get-bucket-policy \
 ## 🔄 バックアップ・復旧手順
 
 ### 定期バックアップ作成
+
 ```bash
 #!/bin/bash
 # backup.sh - 自動バックアップスクリプト
@@ -465,6 +493,7 @@ echo "✅ Backup completed: ${BACKUP_PREFIX}"
 ```
 
 ### 災害復旧手順
+
 ```bash
 # 1. インフラ復旧
 aws cloudformation create-stack \
@@ -497,6 +526,7 @@ aws lambda invoke \
 ## 📈 スケーリング・最適化
 
 ### コスト最適化
+
 ```bash
 # Lambda メモリ使用量分析
 aws logs filter-log-events \
@@ -512,6 +542,7 @@ aws lambda update-function-configuration \
 ```
 
 ### パフォーマンス最適化
+
 ```bash
 # 同時実行数制限設定
 aws lambda put-provisioned-concurrency-config \

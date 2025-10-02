@@ -334,29 +334,66 @@ class WebhookLambda:
             return f"❌ フィード削除中にエラーが発生しました: {str(e)}"
 
     def _handle_notification_command(self, user_id: str) -> str:
-        """通知コマンド処理"""
+        """通知コマンド処理（ローディングスピナー対応）"""
         try:
-            # Notifier Lambda 非同期実行
+            # 1. ローディングアニメーション開始
+            self.line_client.start_loading_animation(user_id, 60)
+            logger.info(f"ローディングアニメーション開始: user_id={user_id}")
+
+            # 2. Notifier Lambda 同期実行
             payload = {
                 'source': 'webhook',
                 'user_id': user_id,
                 'trigger_type': 'manual'
             }
 
+            logger.info("手動通知のため Notifier Lambda を同期実行します")
             response = self.lambda_client.invoke(
                 FunctionName=self.notifier_function_name,
-                InvocationType='Event',  # 非同期実行
+                InvocationType='RequestResponse',  # 同期実行
                 Payload=json.dumps(payload)
             )
 
-            if response['StatusCode'] == 202:
-                return "🔔 手動通知を開始しました。\n\n新着記事があれば数分以内に通知されます。"
-            else:
+            # 3. Lambda 実行結果を解析
+            if response['StatusCode'] != 200:
                 logger.error(f"Lambda呼び出しエラー: Status {response['StatusCode']}")
                 return "❌ 通知の実行に失敗しました。"
 
+            # Lambda からのレスポンス取得
+            response_payload = json.loads(response['Payload'].read())
+            logger.info(f"Notifier Lambda レスポンス: {response_payload}")
+
+            # 4. 結果に応じたメッセージ返却
+            if response_payload.get('statusCode') == 200:
+                body = response_payload.get('body', {})
+
+                # body が文字列の場合は JSON パース
+                if isinstance(body, str):
+                    try:
+                        body = json.loads(body)
+                    except json.JSONDecodeError:
+                        body = {}
+
+                # 新着記事数を確認
+                total_articles = body.get('total_articles', 0)
+
+                if total_articles > 0:
+                    # 通知が送信された場合は何もしない（通知が既に送られている）
+                    logger.info(f"手動通知完了: {total_articles}件の記事を通知")
+                    return None  # 追加メッセージ送信なし
+                else:
+                    # 新着記事がない場合
+                    logger.info("手動通知: 新着記事なし")
+                    return "📭 現在、新着記事はありません。\n\n定期通知（12:30・21:00）で最新情報をお届けします。"
+            else:
+                # エラーの場合
+                error_msg = body.get('message', '不明なエラーが発生しました') if isinstance(body, dict) else str(body)
+                logger.error(f"Notifier Lambda エラー: {error_msg}")
+                return f"❌ 通知処理中にエラーが発生しました:\n{error_msg}"
+
         except Exception as e:
             logger.error(f"通知コマンド処理でエラー: {e}")
+            logger.error(f"エラー詳細: {traceback.format_exc()}")
             return f"❌ 通知実行中にエラーが発生しました: {str(e)}"
 
     def _get_help_message(self) -> str:

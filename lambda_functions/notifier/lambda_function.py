@@ -81,13 +81,23 @@ class NotifierLambda:
             logger.info("RSS通知処理を開始しました")
             logger.info(f"イベント: {json.dumps(event, ensure_ascii=False)}")
 
+            # 実行タイプ判定（手動 or 自動）
+            trigger_type = event.get('trigger_type', 'auto')
+            is_manual = trigger_type == 'manual'
+            logger.info(f"実行タイプ: {'手動' if is_manual else '自動'}")
+
             # 1. RSS設定読み込み
             rss_config = self.s3_manager.load_rss_config()
             feeds = rss_config.get('feeds', [])
 
             if not feeds:
                 logger.warning("RSSフィードが設定されていません")
-                return self._create_response(200, "RSSフィードが設定されていません")
+                return self._create_response(200, {
+                    "message": "RSSフィードが設定されていません",
+                    "total_articles": 0,
+                    "is_manual": is_manual,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                })
 
             logger.info(f"RSS設定読み込み完了。フィード数: {len(feeds)}")
 
@@ -96,14 +106,24 @@ class NotifierLambda:
 
             if not categorized_articles:
                 logger.info("新着記事がありませんでした")
-                return self._create_response(200, "新着記事がありませんでした")
+                return self._create_response(200, {
+                    "message": "新着記事がありませんでした",
+                    "total_articles": 0,
+                    "is_manual": is_manual,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                })
 
             # 3. 通知履歴との照合（重複除去）
             filtered_articles = self._deduplicate_articles(categorized_articles)
 
             if not filtered_articles:
                 logger.info("通知済み記事のため、新規通知する記事がありません")
-                return self._create_response(200, "通知済み記事のため、新規通知する記事がありません")
+                return self._create_response(200, {
+                    "message": "通知済み記事のため、新規通知する記事がありません",
+                    "total_articles": 0,
+                    "is_manual": is_manual,
+                    "timestamp": datetime.now(timezone.utc).isoformat()
+                })
 
             # 4. LINE通知メッセージ作成
             flex_message = FlexMessageBuilder.create_carousel_message(filtered_articles)
@@ -142,6 +162,7 @@ class NotifierLambda:
                 "message": "RSS通知処理が正常に完了しました",
                 "total_articles": total_articles,
                 "categories": list(filtered_articles.keys()),
+                "is_manual": is_manual,
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
 
@@ -156,7 +177,12 @@ class NotifierLambda:
             except:
                 pass
 
-            return self._create_response(500, f"RSS通知処理でエラーが発生しました: {str(e)}")
+            return self._create_response(500, {
+                "message": f"RSS通知処理でエラーが発生しました: {str(e)}",
+                "total_articles": 0,
+                "is_manual": event.get('trigger_type') == 'manual',
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
 
     def _deduplicate_articles(self, categorized_articles: Dict[str, List[Dict]]) -> Dict[str, List[Dict]]:
         """記事重複除去"""

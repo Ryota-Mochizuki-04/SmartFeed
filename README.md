@@ -1,14 +1,15 @@
 # 📡 RSS LINE Notifier
 
-RSSフィードから新着記事を自動取得し、LINEメッセージとして美しいカルーセル形式で通知するサーバーレスシステムです。
+RSS フィードから新着記事を自動取得し、LINE メッセージとして美しいカルーセル形式で通知するサーバーレスシステムです。
 
 ## 🎯 プロジェクト概要
 
 ### 主な機能
-- **自動RSS監視**: 定期的に複数のRSSフィードを監視
+
+- **自動 RSS 監視**: 定期的に複数の RSS フィードを監視
 - **インテリジェント記事分析**: 記事の自動分類・難易度判定・読了時間推定
-- **LINE通知**: 美しいカルーセル形式でのリッチメッセージ配信
-- **LINEコマンド**: チャットでのフィード管理（追加・削除・一覧）
+- **LINE 通知**: 美しいカルーセル形式でのリッチメッセージ配信
+- **LINE コマンド**: チャットでのフィード管理（追加・削除・一覧）
 - **サーバーレス**: AWS Lambda による完全サーバーレス運用
 
 ## 🏗️ アーキテクチャ
@@ -36,20 +37,23 @@ RSSフィードから新着記事を自動取得し、LINEメッセージとし�
 ## 🛠️ 技術スタック
 
 ### AWS サービス
+
 - **Lambda**: サーバーレス実行環境（Python 3.12）
-- **S3**: データストレージ（RSS設定・通知履歴）
+- **S3**: データストレージ（RSS 設定・通知履歴）
 - **API Gateway**: Webhook エンドポイント
 - **EventBridge**: 定期実行スケジューラー
 - **CloudWatch**: ログ・メトリクス監視
 - **CloudFormation**: インフラコード化
 
 ### 開発技術
+
 - **Python 3.12**: メイン開発言語
-- **feedparser**: RSS解析
-- **requests**: HTTP通信
+- **feedparser**: RSS 解析
+- **requests**: HTTP 通信
 - **boto3**: AWS SDK
 
-### 外部API
+### 外部 API
+
 - **LINE Messaging API**: メッセージ送信・Webhook
 - **RSS Feeds**: 記事データ取得
 
@@ -58,6 +62,7 @@ RSSフィードから新着記事を自動取得し、LINEメッセージとし�
 ### 必要なツール
 
 #### Linux/macOS
+
 ```bash
 # Python 3.12+
 python3.12 --version  # Python 3.12.x
@@ -70,6 +75,7 @@ zip --version
 ```
 
 #### Windows
+
 ```powershell
 # Python 3.12+
 python --version  # Python 3.12.x
@@ -81,23 +87,27 @@ aws --version  # aws-cli/2.x.x
 $PSVersionTable.PSVersion
 ```
 
-**サポート対象OS:**
+**サポート対象 OS:**
+
 - ✅ Ubuntu/Debian Linux（推奨）
 - ✅ macOS（Intel/Apple Silicon）
 - ✅ Windows 10/11（PowerShell/コマンドプロンプト）
 
 > **Windows ユーザーへの注意**:
-> - 管理者権限でPowerShellを実行することを推奨します
+>
+> - 管理者権限で PowerShell を実行することを推奨します
 > - Git Bash または WSL (Windows Subsystem for Linux) の使用でより快適に開発できます
-> - 環境変数の読み込み方法が異なるため、ドキュメント内のWindows向け手順を必ず確認してください
+> - 環境変数の読み込み方法が異なるため、ドキュメント内の Windows 向け手順を必ず確認してください
 
 ### 必要なアカウント
-- **AWSアカウント**: Lambda、S3、API Gateway等の利用
-- **LINE Developersアカウント**: Messaging API利用
+
+- **AWS アカウント**: Lambda、S3、API Gateway 等の利用
+- **LINE Developers アカウント**: Messaging API 利用
 
 ## 🚀 クイックスタート
 
 ### プロジェクト取得
+
 ```bash
 # GitHubからクローン
 git clone https://github.com/Ryota-Mochizuki-04/SmartFeed
@@ -132,15 +142,16 @@ source .env
 デプロイ完了後のシステム構成：
 
 - **Webhook URL**: `https://[API-ID].execute-api.ap-northeast-1.amazonaws.com/prod/webhook`
-- **S3バケット**: `rss-line-notifier-prod-[ACCOUNT-ID]`
-- **通知スケジュール**: 毎日12:30と21:00（JST）
+- **S3 バケット**: `rss-line-notifier-prod-[ACCOUNT-ID]`
+- **通知スケジュール**: 毎日 12:30 と 21:00（JST）
 - **推奨デプロイ地域**: Asia Pacific (Tokyo) - ap-northeast-1
 
-> 実際のURL・バケット名は、デプロイ時にAWSによって自動生成されます。
+> 実際の URL・バケット名は、デプロイ時に AWS によって自動生成されます。
 
 ### 手動セットアップ
 
 #### 1. 前提条件の確認
+
 ```bash
 # Python 3.12+ の確認
 python3.12 --version
@@ -152,43 +163,50 @@ aws --version
 sudo apt update && sudo apt install -y python3.12 curl wget unzip jq
 ```
 
-#### 2. LINE API設定
-[👉 LINE API設定ガイド](docs/01_line_api_setup.md) の詳細手順に従って設定
+#### 2. LINE API 設定
 
-#### 3. AWS設定
-[👉 AWS設定ガイド](docs/02_aws_setup.md) の詳細手順に従って設定
+[👉 LINE API 設定ガイド](docs/01_line_api_setup.md) の詳細手順に従って設定
+
+#### 3. AWS 設定
+
+[👉 AWS 設定ガイド](docs/02_aws_setup.md) の詳細手順に従って設定
 
 #### 4. デプロイ実行
+
 [👉 デプロイガイド](docs/03_deployment.md) の手順に従ってデプロイ
 
 ## 📚 ドキュメント
 
 ### 🔰 初学者向けガイド
-- [📱 LINE API設定ガイド](docs/01_line_api_setup.md) - LINE Bot作成から認証情報取得まで
-- [☁️ AWS設定ガイド](docs/02_aws_setup.md) - AWSアカウント作成からCLI設定まで
+
+- [📱 LINE API 設定ガイド](docs/01_line_api_setup.md) - LINE Bot 作成から認証情報取得まで
+- [☁️ AWS 設定ガイド](docs/02_aws_setup.md) - AWS アカウント作成から CLI 設定まで
 - [🚀 デプロイガイド](docs/03_deployment.md) - ステップバイステップデプロイ手順
 - [⚡ 運用ガイド](docs/04_operation.md) - 日常運用・設定変更・監視方法
 - [🔧 トラブルシューティング](docs/05_troubleshooting.md) - よくある問題と解決方法
 
 ### 📖 技術仕様書
+
 - [📊 プロジェクト概要](vibe-coding-docs/01_project_overview.md)
 - [🏗️ アーキテクチャ設計](vibe-coding-docs/02_architecture_design.md)
-- [🔌 API仕様](vibe-coding-docs/03_api_specifications.md)
+- [🔌 API 仕様](vibe-coding-docs/03_api_specifications.md)
 - [💾 データベース設計](vibe-coding-docs/04_database_storage_design.md)
 - [⚙️ 環境設定](vibe-coding-docs/06_environment_configuration.md)
 
 ## 🔧 利用可能なコマンド
 
-### LINEコマンド
-| コマンド | 機能 | 例 |
-|----------|------|-----|
-| `一覧` | 登録済みRSSフィード表示 | `一覧` |
-| `追加 <URL>` | RSSフィード追加 | `追加 https://qiita.com/popular/items/feed` |
-| `削除 <番号>` | RSSフィード削除 | `削除 1` |
-| `通知` | 手動通知実行 | `通知` |
-| `ヘルプ` | 使用方法表示 | `ヘルプ` |
+### LINE コマンド
+
+| コマンド      | 機能                      | 例                                          |
+| ------------- | ------------------------- | ------------------------------------------- |
+| `一覧`        | 登録済み RSS フィード表示 | `一覧`                                      |
+| `追加 <URL>`  | RSS フィード追加          | `追加 https://qiita.com/popular/items/feed` |
+| `削除 <番号>` | RSS フィード削除          | `削除 1`                                    |
+| `通知`        | 手動通知実行              | `通知`                                      |
+| `ヘルプ`      | 使用方法表示              | `ヘルプ`                                    |
 
 ### 開発・運用コマンド
+
 ```bash
 # 環境セットアップ（初回のみ）
 ./scripts/setup-environment.sh
@@ -217,10 +235,11 @@ python3.12 scripts/create_packages.py
 ## 🎨 v2.1 新機能
 
 ### インテリジェント記事分析システム
-- **記事タイプ自動分類**: 🔥トレンド、⚡技術解説、🛠️ツール、📊分析、📰ニュース
-- **難易度推定**: 初級・中級・上級の3段階判定
+
+- **記事タイプ自動分類**: 🔥 トレンド、⚡ 技術解説、🛠️ ツール、📊 分析、📰 ニュース
+- **難易度推定**: 初級・中級・上級の 3 段階判定
 - **読了時間推定**: 記事長に基づく読了時間算出
-- **優先順位表示**: カテゴリ内での🥇🥈🥉ランキング
+- **優先順位表示**: カテゴリ内での 🥇🥈🥉 ランキング
 - **強化デザイン**: グラデーション背景、視覚的メタ情報
 
 ## 📊 プロジェクト構成
@@ -267,7 +286,7 @@ SmartFeed/
 2. フィーチャーブランチを作成 (`git checkout -b feature/amazing-feature`)
 3. 変更をコミット (`git commit -m 'Add amazing feature'`)
 4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. Pull Requestを作成
+5. Pull Request を作成
 
 ## 📄 ライセンス
 
@@ -276,9 +295,10 @@ SmartFeed/
 ## 🆘 サポート
 
 問題が発生した場合：
+
 1. [docs/troubleshooting.md](docs/troubleshooting.md) を確認
 2. [Issues](../../issues) で既存の問題を検索
-3. 新しいIssueを作成
+3. 新しい Issue を作成
 
 ---
 

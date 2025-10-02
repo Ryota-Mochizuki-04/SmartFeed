@@ -1,16 +1,18 @@
-# RSS LINE Notifier - API仕様書
+# RSS LINE Notifier - API 仕様書
 
-## 📋 API概要
+## 📋 API 概要
 
-### システム内API構成
-1. **LINE Webhook API**: LINE Platformからのイベント受信
-2. **LINE Messaging API**: LINEメッセージ送信（外部API）
-3. **RSS Feed API**: 外部RSSフィード取得（外部API）
-4. **Internal Lambda API**: Lambda関数間連携
+### システム内 API 構成
+
+1. **LINE Webhook API**: LINE Platform からのイベント受信
+2. **LINE Messaging API**: LINE メッセージ送信（外部 API）
+3. **RSS Feed API**: 外部 RSS フィード取得（外部 API）
+4. **Internal Lambda API**: Lambda 関数間連携
 
 ## 🔗 1. LINE Webhook API
 
 ### エンドポイント情報
+
 - **URL**: `https://{api-gateway-id}.execute-api.ap-northeast-1.amazonaws.com/webhook`
 - **Method**: `POST`
 - **Content-Type**: `application/json`
@@ -19,6 +21,7 @@
 ### 1.1 Webhook Event Reception
 
 #### Request Headers
+
 ```http
 POST /webhook HTTP/1.1
 Host: {api-gateway-id}.execute-api.ap-northeast-1.amazonaws.com
@@ -28,6 +31,7 @@ User-Agent: LineBotWebhook/2.0
 ```
 
 #### Request Body - Text Message Event
+
 ```json
 {
   "destination": "Udxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -57,6 +61,7 @@ User-Agent: LineBotWebhook/2.0
 ```
 
 #### Response
+
 ```json
 {
   "statusCode": 200,
@@ -67,6 +72,7 @@ User-Agent: LineBotWebhook/2.0
 ### 1.2 署名検証
 
 #### 検証アルゴリズム
+
 ```python
 import hmac
 import hashlib
@@ -83,16 +89,18 @@ def verify_signature(body: str, signature: str, channel_secret: str) -> bool:
     return hmac.compare_digest(signature, expected_signature)
 ```
 
-## 💬 2. LINE Messaging API (外部API)
+## 💬 2. LINE Messaging API (外部 API)
 
 ### 2.1 Push Message API
 
 #### Endpoint
+
 - **URL**: `https://api.line.me/v2/bot/message/push`
 - **Method**: `POST`
 - **Authentication**: `Bearer {Channel Access Token}`
 
 #### Request - Text Message
+
 ```json
 {
   "to": "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -106,6 +114,7 @@ def verify_signature(body: str, signature: str, channel_secret: str) -> bool:
 ```
 
 #### Request - Flex Message (Carousel)
+
 ```json
 {
   "to": "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -211,6 +220,7 @@ def verify_signature(body: str, signature: str, channel_secret: str) -> bool:
 ### 2.2 Loading Animation API
 
 #### Request
+
 ```json
 {
   "chatId": "Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
@@ -219,17 +229,19 @@ def verify_signature(body: str, signature: str, channel_secret: str) -> bool:
 ```
 
 #### Response
+
 ```json
 {
   "statusCode": 200
 }
 ```
 
-## 📰 3. RSS Feed API (外部API)
+## 📰 3. RSS Feed API (外部 API)
 
 ### 3.1 RSS Feed Fetch
 
 #### Request Example
+
 ```http
 GET /feed.xml HTTP/1.1
 Host: qiita.com
@@ -238,6 +250,7 @@ Accept: application/rss+xml, application/xml, text/xml
 ```
 
 #### Response - RSS 2.0 Format
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
@@ -260,6 +273,7 @@ Accept: application/rss+xml, application/xml, text/xml
 ```
 
 #### Response - Atom Format
+
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -285,6 +299,7 @@ Accept: application/rss+xml, application/xml, text/xml
 ### 4.1 Notifier Lambda Invocation
 
 #### Request (from Webhook Lambda)
+
 ```python
 import boto3
 
@@ -302,6 +317,7 @@ response = lambda_client.invoke(
 ```
 
 #### Response
+
 ```python
 {
     'StatusCode': 202,
@@ -315,6 +331,7 @@ response = lambda_client.invoke(
 ### 5.1 Command Processing Interface
 
 #### Input Command Format
+
 ```python
 class UserCommand:
     def __init__(self, text: str, user_id: str):
@@ -331,6 +348,7 @@ class UserCommand:
 ```
 
 #### Command Response Format
+
 ```python
 class CommandResponse:
     def __init__(self, message_type: str, content: dict):
@@ -345,12 +363,14 @@ class CommandResponse:
 #### 5.2.1 一覧コマンド
 
 **Input**:
+
 ```python
 command = "一覧"
 args = []
 ```
 
 **Processing**:
+
 ```python
 def handle_list_command(user_id: str) -> CommandResponse:
     # 1. S3からRSS設定読み込み
@@ -370,6 +390,7 @@ def handle_list_command(user_id: str) -> CommandResponse:
 ```
 
 **Output**:
+
 ```json
 {
   "type": "text",
@@ -380,12 +401,14 @@ def handle_list_command(user_id: str) -> CommandResponse:
 #### 5.2.2 追加コマンド
 
 **Input**:
+
 ```python
 command = "追加"
 args = ["https://qiita.com/popular/items/feed"]
 ```
 
 **Processing**:
+
 ```python
 def handle_add_command(user_id: str, url: str) -> CommandResponse:
     # 1. URL検証
@@ -420,6 +443,7 @@ def handle_add_command(user_id: str, url: str) -> CommandResponse:
 ```
 
 **Output (Success)**:
+
 ```json
 {
   "type": "text",
@@ -428,6 +452,7 @@ def handle_add_command(user_id: str, url: str) -> CommandResponse:
 ```
 
 **Output (Error)**:
+
 ```json
 {
   "type": "text",
@@ -438,12 +463,14 @@ def handle_add_command(user_id: str, url: str) -> CommandResponse:
 #### 5.2.3 削除コマンド
 
 **Input**:
+
 ```python
 command = "削除"
 args = ["1"]
 ```
 
 **Processing**:
+
 ```python
 def handle_delete_command(user_id: str, number_str: str) -> CommandResponse:
     # 1. 番号検証
@@ -469,12 +496,14 @@ def handle_delete_command(user_id: str, number_str: str) -> CommandResponse:
 #### 5.2.4 通知コマンド
 
 **Input**:
+
 ```python
 command = "通知"
 args = []
 ```
 
 **Processing**:
+
 ```python
 def handle_notification_command(user_id: str) -> CommandResponse:
     # 1. Notifier Lambda非同期実行
@@ -498,12 +527,14 @@ def handle_notification_command(user_id: str) -> CommandResponse:
 #### 5.2.5 ヘルプコマンド
 
 **Input**:
+
 ```python
 command = "ヘルプ"
 args = []
 ```
 
 **Output**:
+
 ```json
 {
   "type": "text",
@@ -516,6 +547,7 @@ args = []
 ### 6.1 HTTP Error Responses
 
 #### 400 Bad Request
+
 ```json
 {
   "statusCode": 400,
@@ -528,6 +560,7 @@ args = []
 ```
 
 #### 401 Unauthorized
+
 ```json
 {
   "statusCode": 401,
@@ -540,6 +573,7 @@ args = []
 ```
 
 #### 500 Internal Server Error
+
 ```json
 {
   "statusCode": 500,
@@ -554,6 +588,7 @@ args = []
 ### 6.2 LINE API Error Handling
 
 #### Rate Limit Error
+
 ```json
 {
   "message": "The request has been rate limited.",
@@ -567,6 +602,7 @@ args = []
 ```
 
 #### Invalid Message Format
+
 ```json
 {
   "message": "The request body has 1 error(s)",
@@ -579,21 +615,24 @@ args = []
 }
 ```
 
-## 📏 7. API制限・制約
+## 📏 7. API 制限・制約
 
-### LINE API制限
-- **メッセージサイズ**: 最大50KB
-- **Push Message**: 1000件/月（無料プラン）
-- **Flex Message**: 最大12カラム、50アクション
+### LINE API 制限
 
-### Lambda制限
-- **実行時間**: 最大15分
-- **メモリ**: 最大10GB
-- **同時実行**: アカウント制限（デフォルト1000）
+- **メッセージサイズ**: 最大 50KB
+- **Push Message**: 1000 件/月（無料プラン）
+- **Flex Message**: 最大 12 カラム、50 アクション
 
-### RSS Feed制限
-- **フィード数**: 推奨100フィード/ユーザー
-- **記事数**: 最大30記事/通知
-- **取得タイムアウト**: 30秒/フィード
+### Lambda 制限
 
-この API仕様書により、システム間の連携とデータフォーマットが明確に定義されています。
+- **実行時間**: 最大 15 分
+- **メモリ**: 最大 10GB
+- **同時実行**: アカウント制限（デフォルト 1000）
+
+### RSS Feed 制限
+
+- **フィード数**: 推奨 100 フィード/ユーザー
+- **記事数**: 最大 30 記事/通知
+- **取得タイムアウト**: 30 秒/フィード
+
+この API 仕様書により、システム間の連携とデータフォーマットが明確に定義されています。

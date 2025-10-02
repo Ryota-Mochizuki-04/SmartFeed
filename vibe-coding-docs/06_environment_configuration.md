@@ -5,34 +5,37 @@
 ### 環境変数一覧
 
 #### Notifier Lambda 環境変数
-| 変数名 | 必須 | デフォルト値 | 説明 | 例 |
-|--------|------|-------------|------|-----|
-| **LINE_TOKEN** | ✅ | - | LINE Channel Access Token | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
-| **LINE_USER_ID** | ✅ | - | 通知先 LINE User ID | `Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
-| **BUCKET_NAME** | ✅ | - | S3バケット名 | `rss-line-notifier-v1-123456789012` |
-| **AWS_REGION** | ❌ | `ap-northeast-1` | AWSリージョン | `ap-northeast-1` |
-| **LOG_LEVEL** | ❌ | `INFO` | ログレベル | `DEBUG`, `INFO`, `WARN`, `ERROR` |
-| **MAX_FEEDS** | ❌ | `100` | 最大フィード数 | `100` |
-| **MAX_ARTICLES_PER_FEED** | ❌ | `10` | フィード毎最大記事数 | `10` |
-| **ARTICLE_AGE_HOURS** | ❌ | `24` | 記事有効期間（時間） | `24` |
-| **REQUEST_TIMEOUT** | ❌ | `30` | HTTP リクエストタイムアウト（秒） | `30` |
-| **PARALLEL_WORKERS** | ❌ | `10` | 並列取得ワーカー数 | `10` |
+
+| 変数名                    | 必須 | デフォルト値     | 説明                              | 例                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------- | ---- | ---------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **LINE_TOKEN**            | ✅   | -                | LINE Channel Access Token         | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
+| **LINE_USER_ID**          | ✅   | -                | 通知先 LINE User ID               | `Uxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **BUCKET_NAME**           | ✅   | -                | S3 バケット名                     | `rss-line-notifier-v1-123456789012`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **AWS_REGION**            | ❌   | `ap-northeast-1` | AWS リージョン                    | `ap-northeast-1`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **LOG_LEVEL**             | ❌   | `INFO`           | ログレベル                        | `DEBUG`, `INFO`, `WARN`, `ERROR`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **MAX_FEEDS**             | ❌   | `100`            | 最大フィード数                    | `100`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **MAX_ARTICLES_PER_FEED** | ❌   | `10`             | フィード毎最大記事数              | `10`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **ARTICLE_AGE_HOURS**     | ❌   | `24`             | 記事有効期間（時間）              | `24`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **REQUEST_TIMEOUT**       | ❌   | `30`             | HTTP リクエストタイムアウト（秒） | `30`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **PARALLEL_WORKERS**      | ❌   | `10`             | 並列取得ワーカー数                | `10`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 #### Webhook Lambda 環境変数
-| 変数名 | 必須 | デフォルト値 | 説明 | 例 |
-|--------|------|-------------|------|-----|
-| **LINE_TOKEN** | ✅ | - | LINE Channel Access Token | `（上記と同じ）` |
-| **LINE_CHANNEL_SECRET** | ✅ | - | LINE Channel Secret | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
-| **BUCKET_NAME** | ✅ | - | S3バケット名 | `rss-line-notifier-v1-123456789012` |
-| **NOTIFIER_FUNCTION_NAME** | ✅ | - | Notifier Lambda 関数名 | `rss-notifier-v1` |
-| **AWS_REGION** | ❌ | `ap-northeast-1` | AWSリージョン | `ap-northeast-1` |
-| **LOG_LEVEL** | ❌ | `INFO` | ログレベル | `DEBUG`, `INFO`, `WARN`, `ERROR` |
-| **LOADING_TIMEOUT** | ❌ | `5` | Loading Animation 表示時間（秒） | `5` |
-| **MAX_COMMAND_LENGTH** | ❌ | `1000` | コマンド最大文字数 | `1000` |
+
+| 変数名                     | 必須 | デフォルト値     | 説明                             | 例                                  |
+| -------------------------- | ---- | ---------------- | -------------------------------- | ----------------------------------- |
+| **LINE_TOKEN**             | ✅   | -                | LINE Channel Access Token        | `（上記と同じ）`                    |
+| **LINE_CHANNEL_SECRET**    | ✅   | -                | LINE Channel Secret              | `xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`  |
+| **BUCKET_NAME**            | ✅   | -                | S3 バケット名                    | `rss-line-notifier-v1-123456789012` |
+| **NOTIFIER_FUNCTION_NAME** | ✅   | -                | Notifier Lambda 関数名           | `rss-notifier-v1`                   |
+| **AWS_REGION**             | ❌   | `ap-northeast-1` | AWS リージョン                   | `ap-northeast-1`                    |
+| **LOG_LEVEL**              | ❌   | `INFO`           | ログレベル                       | `DEBUG`, `INFO`, `WARN`, `ERROR`    |
+| **LOADING_TIMEOUT**        | ❌   | `5`              | Loading Animation 表示時間（秒） | `5`                                 |
+| **MAX_COMMAND_LENGTH**     | ❌   | `1000`           | コマンド最大文字数               | `1000`                              |
 
 ### 環境変数設定方法
 
 #### CloudFormation での設定
+
 ```yaml
 # cloudformation-template.yaml
 NotifierLambdaFunction:
@@ -52,6 +55,7 @@ NotifierLambdaFunction:
 ```
 
 #### AWS CLI での設定
+
 ```bash
 # Notifier Lambda 環境変数設定
 aws lambda update-function-configuration \
@@ -88,6 +92,7 @@ aws lambda update-function-configuration \
 ### 1. CloudFormation パラメータファイル
 
 #### parameters.json 構造
+
 ```json
 [
   {
@@ -115,15 +120,16 @@ aws lambda update-function-configuration \
 
 #### パラメータ詳細定義
 
-| パラメータ | 必須 | タイプ | 制約 | 説明 |
-|------------|------|-------|------|------|
-| **LineToken** | ✅ | String | NoEcho: true | LINE Channel Access Token |
-| **LineChannelSecret** | ✅ | String | NoEcho: true | LINE Channel Secret |
-| **LineUserId** | ✅ | String | - | 通知先ユーザーID |
-| **NotificationTime** | ❌ | String | Cron形式 | 通知実行時刻（UTC） |
-| **Environment** | ❌ | String | dev/staging/v1 | 環境名 |
+| パラメータ            | 必須 | タイプ | 制約           | 説明                      |
+| --------------------- | ---- | ------ | -------------- | ------------------------- |
+| **LineToken**         | ✅   | String | NoEcho: true   | LINE Channel Access Token |
+| **LineChannelSecret** | ✅   | String | NoEcho: true   | LINE Channel Secret       |
+| **LineUserId**        | ✅   | String | -              | 通知先ユーザー ID         |
+| **NotificationTime**  | ❌   | String | Cron 形式      | 通知実行時刻（UTC）       |
+| **Environment**       | ❌   | String | dev/staging/v1 | 環境名                    |
 
 #### parameters.json.template
+
 ```json
 [
   {
@@ -151,7 +157,8 @@ aws lambda update-function-configuration \
 
 ### 2. アプリケーション設定ファイル
 
-#### RSS設定 (S3: rss-list.json)
+#### RSS 設定 (S3: rss-list.json)
+
 ```json
 {
   "version": "2.1",
@@ -192,6 +199,7 @@ aws lambda update-function-configuration \
 ```
 
 #### 通知履歴設定 (S3: notified-history.json)
+
 ```json
 {
   "version": "2.1",
@@ -212,6 +220,7 @@ aws lambda update-function-configuration \
 ### 3. Lambda 関数設定
 
 #### requirements.txt (共通)
+
 ```
 boto3>=1.26.0
 feedparser>=6.0.10
@@ -220,6 +229,7 @@ python-dateutil>=2.8.2
 ```
 
 #### Lambda レイヤー設定（オプション）
+
 ```yaml
 # 共通ライブラリレイヤー
 CommonLibrariesLayer:
@@ -237,6 +247,7 @@ CommonLibrariesLayer:
 ## 🔧 設定管理ユーティリティ
 
 ### 設定検証スクリプト
+
 ```python
 #!/usr/bin/env python3
 """
@@ -399,6 +410,7 @@ if __name__ == "__main__":
 ```
 
 ### 設定生成スクリプト
+
 ```python
 #!/usr/bin/env python3
 """
@@ -525,6 +537,7 @@ if __name__ == "__main__":
 ## 🔐 セキュリティ考慮事項
 
 ### 機密情報管理
+
 ```bash
 # 環境変数の暗号化（KMS使用）
 aws lambda update-function-configuration \
@@ -541,19 +554,15 @@ aws ssm put-parameter \
 ```
 
 ### アクセス制御
+
 ```json
 {
   "Version": "2012-10-17",
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "ssm:GetParameter",
-        "ssm:GetParameters"
-      ],
-      "Resource": [
-        "arn:aws:ssm:ap-northeast-1:*:parameter/rss-notifier/v1/*"
-      ]
+      "Action": ["ssm:GetParameter", "ssm:GetParameters"],
+      "Resource": ["arn:aws:ssm:ap-northeast-1:*:parameter/rss-notifier/v1/*"]
     }
   ]
 }

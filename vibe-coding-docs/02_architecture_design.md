@@ -3,12 +3,14 @@
 ## 🏗️ システムアーキテクチャ概要
 
 ### アーキテクチャパターン
-- **サーバーレスアーキテクチャ**: AWS Lambda中心の構成
+
+- **サーバーレスアーキテクチャ**: AWS Lambda 中心の構成
 - **イベント駆動型**: EventBridge + Lambda の非同期処理
-- **マイクロサービス**: 機能別Lambda関数の分離設計
-- **ステートレス**: S3による状態管理、Lambda関数は完全ステートレス
+- **マイクロサービス**: 機能別 Lambda 関数の分離設計
+- **ステートレス**: S3 による状態管理、Lambda 関数は完全ステートレス
 
 ### システム全体図
+
 ```
 ┌─────────────────┐    ┌──────────────┐    ┌─────────────┐
 │   LINE Platform │────│ API Gateway  │────│   Webhook   │
@@ -40,9 +42,11 @@
 ### 1. Lambda Functions
 
 #### 1.1 Notifier Lambda (rss-notifier-v1)
-**責務**: RSS監視・記事収集・LINE通知
+
+**責務**: RSS 監視・記事収集・LINE 通知
 
 **処理フロー**:
+
 ```python
 def lambda_handler(event, context):
     # 1. S3からRSS設定読み込み
@@ -74,16 +78,19 @@ def lambda_handler(event, context):
 ```
 
 **技術仕様**:
+
 - **Runtime**: Python 3.9
 - **Memory**: 512MB
-- **Timeout**: 15分
+- **Timeout**: 15 分
 - **Environment Variables**:
   - `LINE_TOKEN`, `LINE_USER_ID`, `BUCKET_NAME`
 
 #### 1.2 Webhook Lambda (rss-webhook-v1)
-**責務**: LINE Webhookハンドリング・ユーザーコマンド処理
+
+**責務**: LINE Webhook ハンドリング・ユーザーコマンド処理
 
 **処理フロー**:
+
 ```python
 def lambda_handler(event, context):
     # 1. LINE署名検証
@@ -108,15 +115,17 @@ def lambda_handler(event, context):
 ```
 
 **技術仕様**:
+
 - **Runtime**: Python 3.9
 - **Memory**: 256MB
-- **Timeout**: 30秒
+- **Timeout**: 30 秒
 - **Environment Variables**:
   - `LINE_TOKEN`, `LINE_CHANNEL_SECRET`, `BUCKET_NAME`, `NOTIFIER_FUNCTION_NAME`
 
 ### 2. Storage Layer (Amazon S3)
 
 #### 2.1 S3 Bucket 構成
+
 ```
 rss-line-notifier-v1-{AccountId}/
 ├── rss-list.json           # RSS設定ファイル
@@ -126,7 +135,8 @@ rss-line-notifier-v1-{AccountId}/
 
 #### 2.2 データ構造設計
 
-**RSS設定 (rss-list.json)**:
+**RSS 設定 (rss-list.json)**:
+
 ```json
 {
   "feeds": [
@@ -144,6 +154,7 @@ rss-line-notifier-v1-{AccountId}/
 ```
 
 **通知履歴 (notified-history.json)**:
+
 ```json
 {
   "history": [
@@ -163,6 +174,7 @@ rss-line-notifier-v1-{AccountId}/
 ### 3. API Gateway 設計
 
 #### 3.1 エンドポイント構成
+
 ```
 POST /webhook
 ├── Integration: Webhook Lambda
@@ -172,28 +184,31 @@ POST /webhook
 ```
 
 #### 3.2 セキュリティ設定
-- **HTTPS Only**: TLS 1.2以上
-- **IP制限**: LINE Platform IPアドレス範囲
-- **署名検証**: Lambda内でX-Line-Signatureヘッダー検証
+
+- **HTTPS Only**: TLS 1.2 以上
+- **IP 制限**: LINE Platform IP アドレス範囲
+- **署名検証**: Lambda 内で X-Line-Signature ヘッダー検証
 
 ### 4. EventBridge 設計
 
 #### 4.1 スケジュール設定
+
 ```yaml
 NotificationSchedule:
-  ScheduleExpression: "cron(30 03 * * ? *)"  # JST 12:30 (UTC 03:30)
+  ScheduleExpression: "cron(30 03 * * ? *)" # JST 12:30 (UTC 03:30)
   State: ENABLED
   Target: Notifier Lambda
 
 EveningNotificationSchedule:
-  ScheduleExpression: "cron(00 12 * * ? *)"  # JST 21:00 (UTC 12:00)
+  ScheduleExpression: "cron(00 12 * * ? *)" # JST 21:00 (UTC 12:00)
   State: ENABLED
   Target: Notifier Lambda
 ```
 
 ## 📊 データフロー設計
 
-### 1. RSS監視フロー
+### 1. RSS 監視フロー
+
 ```mermaid
 sequenceDiagram
     participant EB as EventBridge
@@ -221,7 +236,8 @@ sequenceDiagram
     NL->>S3: Update History
 ```
 
-### 2. Webhook処理フロー
+### 2. Webhook 処理フロー
+
 ```mermaid
 sequenceDiagram
     participant LINE as LINE Platform
@@ -251,6 +267,7 @@ sequenceDiagram
 ## 🔐 セキュリティアーキテクチャ
 
 ### 1. 認証・認可設計
+
 ```yaml
 IAM Roles:
   NotifierLambdaRole:
@@ -267,11 +284,13 @@ IAM Roles:
 ```
 
 ### 2. データ暗号化
+
 - **S3**: Server-Side Encryption (AES256)
 - **Lambda**: Environment Variables Encryption (KMS)
 - **API Gateway**: TLS 1.2 in transit
 
 ### 3. アクセス制御
+
 ```yaml
 S3 Bucket Policy:
   - Block Public Access: All
@@ -282,7 +301,8 @@ S3 Bucket Policy:
 
 ## ⚡ パフォーマンス設計
 
-### 1. Lambda最適化
+### 1. Lambda 最適化
+
 ```python
 # 接続プールの再利用
 import requests
@@ -298,11 +318,13 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
 ```
 
 ### 2. メモリ・実行時間最適化
-- **Notifier Lambda**: 512MB、15分タイムアウト
-- **Webhook Lambda**: 256MB、30秒タイムアウト
+
+- **Notifier Lambda**: 512MB、15 分タイムアウト
+- **Webhook Lambda**: 256MB、30 秒タイムアウト
 - **同時実行数**: 1000（デフォルト制限）
 
-### 3. APIレスポンス最適化
+### 3. API レスポンス最適化
+
 ```python
 # 非同期レスポンスパターン
 def lambda_handler(event, context):
@@ -321,11 +343,13 @@ def lambda_handler(event, context):
 ## 🚀 スケーラビリティ設計
 
 ### 1. 水平スケーリング対応
+
 - **Lambda**: 自動スケーリング（同時実行数制限内）
 - **S3**: 無制限スケーリング
 - **API Gateway**: 自動スケーリング
 
 ### 2. マルチユーザー拡張設計
+
 ```python
 # ユーザー別データ分離
 def get_user_config_key(user_id: str) -> str:
@@ -336,12 +360,14 @@ def get_user_history_key(user_id: str) -> str:
 ```
 
 ### 3. リージョン展開
+
 - **プライマリ**: ap-northeast-1 (Tokyo)
 - **セカンダリ**: us-east-1 (N. Virginia) ※グローバル展開時
 
 ## 📈 監視・ログ設計
 
 ### 1. CloudWatch メトリクス
+
 ```yaml
 Custom Metrics:
   - RSS_FETCH_SUCCESS_COUNT
@@ -352,6 +378,7 @@ Custom Metrics:
 ```
 
 ### 2. ログ設計
+
 ```python
 # 構造化ログ
 import json
@@ -365,29 +392,32 @@ logger.info(json.dumps({
 ```
 
 ### 3. アラート設定
+
 - **Error Rate > 5%**: 即座通知
-- **Function Duration > 14分**: 警告通知
+- **Function Duration > 14 分**: 警告通知
 - **Memory Usage > 90%**: 警告通知
 
 ## 🔄 災害復旧設計
 
 ### 1. バックアップ戦略
+
 - **S3 Versioning**: 有効化
 - **Cross-Region Replication**: 必要に応じて設定
-- **Lambda Code**: S3バックアップ
+- **Lambda Code**: S3 バックアップ
 
 ### 2. フェイルオーバー
+
 ```yaml
-Primary Region Failure:
-  1. DNS Failover (Route53)
+Primary Region Failure: 1. DNS Failover (Route53)
   2. Secondary Region Activation
   3. S3 Cross-Region Restore
   4. Lambda Function Deployment
 ```
 
 ### 3. 復旧手順
+
 1. **部分障害**: 自動リトライ機能
 2. **完全障害**: 手動フェイルオーバー
-3. **データ復旧**: S3バージョニングからの復元
+3. **データ復旧**: S3 バージョニングからの復元
 
 このアーキテクチャ設計は、高可用性、セキュリティ、パフォーマンスを考慮したサーバーレス設計となっています。

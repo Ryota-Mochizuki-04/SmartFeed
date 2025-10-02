@@ -7,7 +7,7 @@
 1. [事前準備の確認](#1-事前準備の確認)
 2. [プロジェクトセットアップ](#2-プロジェクトセットアップ)
 3. [環境設定](#3-環境設定)
-4. [RSS設定ファイル作成](#4-rss設定ファイル作成)
+4. [RSS 設定ファイル作成](#4-rss設定ファイル作成)
 5. [デプロイ実行](#5-デプロイ実行)
 6. [デプロイ後設定](#6-デプロイ後設定)
 7. [動作確認](#7-動作確認)
@@ -32,6 +32,7 @@
 ### 1.2 環境要件
 
 #### Linux/macOS
+
 ```
 ✅ Ubuntu/Debian Linux (推奨) または macOS
 ✅ Python 3.12+
@@ -41,6 +42,7 @@
 ```
 
 #### Windows
+
 ```
 ✅ Windows 10/11
 ✅ Python 3.12+
@@ -63,7 +65,7 @@
 
 ### 2.1 プロジェクトクローン
 
-#### 方法1: GitHubからクローン（推奨）
+#### 方法 1: GitHub からクローン（推奨）
 
 ```bash
 # 作業ディレクトリに移動
@@ -76,14 +78,14 @@ git clone https://github.com/Ryota-Mochizuki-04/SmartFeed
 cd SmartFeed
 ```
 
-> **注意**: 既存のAWSアカウントに同名のスタックが存在する場合は、異なるスタック名を使用するか、既存スタックを削除してからデプロイしてください。
+> **注意**: 既存の AWS アカウントに同名のスタックが存在する場合は、異なるスタック名を使用するか、既存スタックを削除してからデプロイしてください。
 
-#### 方法2: ZIPファイルをダウンロード
+#### 方法 2: ZIP ファイルをダウンロード
 
-1. GitHubリポジトリページにアクセス
+1. GitHub リポジトリページにアクセス
 2. 「Code」ボタンをクリック
 3. 「Download ZIP」を選択
-4. ダウンロードしたZIPファイルを展開
+4. ダウンロードした ZIP ファイルを展開
 
 ```bash
 # ZIPファイルを展開した場合
@@ -92,7 +94,7 @@ unzip SmartFeed-main.zip
 cd SmartFeed-main
 ```
 
-#### 方法3: 既存プロジェクトを使用
+#### 方法 3: 既存プロジェクトを使用
 
 既にプロジェクトをお持ちの場合：
 
@@ -108,6 +110,7 @@ ls -la
 ```
 
 期待される構造：
+
 ```
 SmartFeed/
 ├── README.md
@@ -148,9 +151,10 @@ ls -la scripts/
 ```
 
 対話的に以下の設定を行います：
+
 1. 必須ツールの確認・インストール
-2. AWS CLI設定確認
-3. LINE API設定ガイド
+2. AWS CLI 設定確認
+3. LINE API 設定ガイド
 4. 環境変数ファイル作成
 
 ### 3.2 手動セットアップ
@@ -158,6 +162,7 @@ ls -la scripts/
 #### 必須ツールインストール
 
 ##### Ubuntu/Debian
+
 ```bash
 # パッケージ更新
 sudo apt update
@@ -174,6 +179,7 @@ rm -rf awscliv2.zip aws/
 ```
 
 ##### Windows
+
 ```powershell
 # 管理者権限でPowerShellを開いて実行
 
@@ -202,6 +208,7 @@ git --version
 #### 環境変数ファイル作成
 
 ##### Linux/macOS
+
 ```bash
 # 環境変数ファイル作成
 cp config/env.template .env
@@ -211,6 +218,7 @@ nano .env
 ```
 
 ##### Windows
+
 ```powershell
 # 環境変数ファイル作成
 Copy-Item config\env.template .env
@@ -222,6 +230,7 @@ code .env  # VS Codeの場合
 ```
 
 `.env` ファイルに実際の値を設定：
+
 ```bash
 # AWS認証情報
 export AWS_ACCESS_KEY_ID="YOUR_AWS_ACCESS_KEY_ID"
@@ -239,13 +248,15 @@ export ENVIRONMENT="prod"
 ```
 
 ⚠️ **重要**:
+
 - `YOUR_*` の部分を実際の値に置き換えてください
-- AWS認証情報は IAM ユーザー作成時に取得したものを使用
-- LINE API情報は LINE Developers Console から取得したものを使用
+- AWS 認証情報は IAM ユーザー作成時に取得したものを使用
+- LINE API 情報は LINE Developers Console から取得したものを使用
 
 ### 3.3 環境変数読み込み
 
 ##### Linux/macOS
+
 ```bash
 # 環境変数読み込み
 source .env
@@ -257,6 +268,7 @@ echo "LINE Channel Secret (最初の5文字): ${LINE_CHANNEL_SECRET:0:5}***"
 ```
 
 ##### Windows
+
 ```powershell
 # 環境変数読み込み（PowerShellの場合）
 Get-Content .env | ForEach-Object {
@@ -271,29 +283,31 @@ Write-Host "Stack Name: $env:STACK_NAME"
 Write-Host "LINE Channel Secret (最初の5文字): $($env:LINE_CHANNEL_SECRET.Substring(0,5))***"
 ```
 
-> **Windows注意点**: 環境変数の読み込み方法が異なるため、デプロイスクリプト実行前に必ず上記コマンドで環境変数を設定してください。
+> **Windows 注意点**: 環境変数の読み込み方法が異なるため、デプロイスクリプト実行前に必ず上記コマンドで環境変数を設定してください。
 
 ---
 
-## 4. RSS設定ファイル作成
+## 4. RSS 設定ファイル作成
 
 ### 4.1 設定ファイルテンプレート
 
 ##### Linux/macOS
+
 ```bash
 # テンプレートから設定ファイル作成
 cp config/rss-config.json.template config/rss-config.json
 ```
 
 ##### Windows
+
 ```powershell
 # テンプレートから設定ファイル作成
 Copy-Item config\rss-config.json.template config\rss-config.json
 ```
 
-### 4.2 RSS設定編集
+### 4.2 RSS 設定編集
 
-`config/rss-config.json` を編集してRSSフィードを設定：
+`config/rss-config.json` を編集して RSS フィードを設定：
 
 ```json
 {
@@ -347,6 +361,7 @@ Copy-Item config\rss-config.json.template config\rss-config.json
 ### 4.3 設定ファイル検証
 
 ##### Linux/macOS
+
 ```bash
 # JSON構文確認
 python3.12 -m json.tool config/rss-config.json > /dev/null
@@ -354,6 +369,7 @@ echo "RSS設定ファイルの構文は正常です"
 ```
 
 ##### Windows
+
 ```powershell
 # JSON構文確認
 python -m json.tool config\rss-config.json > $null
@@ -382,6 +398,7 @@ try {
 ### 5.2 デプロイ実行
 
 #### 通常のデプロイ
+
 ```bash
 # 環境変数読み込み
 source .env
@@ -391,12 +408,19 @@ source .env
 ```
 
 #### オプション付きデプロイ
+
 ```bash
 # 特定リージョンへのデプロイ
 ./scripts/deploy.sh --region us-east-1
 
 # カスタムスタック名
 ./scripts/deploy.sh --stack my-rss-notifier
+
+# Lambda関数のコードのみ更新（開発時の迅速デプロイ）
+./scripts/deploy.sh --lambda-only
+
+# パッケージ作成のみ
+./scripts/deploy.sh --package-only
 
 # デプロイ前確認のみ
 ./scripts/deploy.sh --dry-run
@@ -407,30 +431,37 @@ source .env
 デプロイは以下の順序で実行されます：
 
 1. **前提条件確認**
+
    - 必須ツールの確認
-   - AWS認証確認
+   - AWS 認証確認
    - 環境変数確認
 
 2. **Lambda パッケージ作成**
+
    - ソースコードパッケージ化
    - 依存関係インストール
-   - ZIPファイル作成
+   - ZIP ファイル作成
 
 3. **CloudFormation テンプレート検証**
-   - YAML構文確認
-   - AWSリソース検証
 
-4. **S3バケット作成**
+   - YAML 構文確認
+   - AWS リソース検証
+
+4. **S3 バケット作成**
+
    - デプロイ用バケット作成
    - パッケージアップロード
 
 5. **CloudFormation デプロイ**
    - スタック作成/更新
-   - AWSリソース作成
+   - AWS リソース作成
+
+> **💡 開発時のヒント**: コード変更のみの場合は `./scripts/deploy.sh --lambda-only` を使用すると、CloudFormation をスキップして Lambda 関数のコードのみを更新できるため、デプロイ時間を大幅に短縮できます。
 
 ### 5.4 デプロイ完了確認
 
 成功時の出力例：
+
 ```
 === デプロイ完了 ===
 
@@ -454,13 +485,13 @@ source .env
    - LINE Botとの動作確認
 ```
 
-> **注意**: 実際のWebhook URLとS3バケット名は、AWSによって自動生成される一意の値になります。デプロイ時の出力を確認してください。
+> **注意**: 実際の Webhook URL と S3 バケット名は、AWS によって自動生成される一意の値になります。デプロイ時の出力を確認してください。
 
 ---
 
 ## 6. デプロイ後設定
 
-### 6.1 RSS設定ファイルアップロード
+### 6.1 RSS 設定ファイルアップロード
 
 ```bash
 # S3バケット名を環境変数から取得
@@ -477,9 +508,10 @@ aws s3 cp config/rss-config.json s3://$BUCKET_NAME/config/rss-config.json \
 echo "RSS設定ファイルをアップロードしました: $BUCKET_NAME"
 ```
 
-### 6.2 LINE Webhook URL設定
+### 6.2 LINE Webhook URL 設定
 
-1. **Webhook URL取得**
+1. **Webhook URL 取得**
+
    ```bash
    # 出力からWebhook URLをコピー
    WEBHOOK_URL=$(aws cloudformation describe-stacks \
@@ -493,9 +525,9 @@ echo "RSS設定ファイルをアップロードしました: $BUCKET_NAME"
 
 2. **LINE Developers Console で設定**
    - [LINE Developers Console](https://developers.line.biz/console/) にアクセス
-   - 該当チャネルの「Messaging API設定」タブを開く
-   - 「Webhook URL」に上記で取得したURLを設定
-   - 「Webhookの利用」を有効にする
+   - 該当チャネルの「Messaging API 設定」タブを開く
+   - 「Webhook URL」に上記で取得した URL を設定
+   - 「Webhook の利用」を有効にする
    - 「検証」をクリックして成功を確認
 
 ### 6.3 EventBridge スケジュール確認
@@ -508,16 +540,17 @@ aws events list-rules \
 ```
 
 **デフォルトの通知スケジュール**:
-- **朝の通知**: 毎日12:30（JST） - UTC 03:30
-- **夜の通知**: 毎日21:00（JST） - UTC 12:00
 
-通知は1日2回、指定された時間に自動実行されます。
+- **朝の通知**: 毎日 12:30（JST） - UTC 03:30
+- **夜の通知**: 毎日 21:00（JST） - UTC 12:00
+
+通知は 1 日 2 回、指定された時間に自動実行されます。
 
 ---
 
 ## 7. 動作確認
 
-### 7.1 Lambda関数テスト
+### 7.1 Lambda 関数テスト
 
 ```bash
 # Notifier関数のテスト実行
@@ -527,16 +560,16 @@ aws events list-rules \
 ./scripts/dev-utils.sh test-lambda webhook
 ```
 
-### 7.2 LINE API接続テスト
+### 7.2 LINE API 接続テスト
 
 ```bash
 # LINE API接続テスト
 ./scripts/dev-utils.sh test-line
 ```
 
-成功すると設定したLINEアカウントにテストメッセージが届きます。
+成功すると設定した LINE アカウントにテストメッセージが届きます。
 
-### 7.3 RSS取得テスト
+### 7.3 RSS 取得テスト
 
 ```bash
 # 個別RSSフィード取得テスト
@@ -560,9 +593,9 @@ aws events list-rules \
 ./scripts/dev-utils.sh logs notifier
 ```
 
-### 7.6 LINE Botコマンドテスト
+### 7.6 LINE Bot コマンドテスト
 
-LINEでBotに以下のコマンドを送信してテスト：
+LINE で Bot に以下のコマンドを送信してテスト：
 
 ```
 一覧          # RSS設定一覧表示
@@ -578,6 +611,7 @@ LINEでBotに以下のコマンドを送信してテスト：
 ### 8.1 デプロイエラー
 
 #### CloudFormation エラー
+
 ```bash
 # スタックイベント確認
 aws cloudformation describe-stack-events \
@@ -592,6 +626,7 @@ aws cloudformation describe-stack-events \
 ```
 
 #### Lambda パッケージエラー
+
 ```bash
 # パッケージ再作成
 python3.12 scripts/create_packages.py
@@ -603,6 +638,7 @@ python3.12 scripts/create_packages.py
 ### 8.2 実行時エラー
 
 #### LINE API エラー
+
 ```bash
 # 環境変数確認
 echo $LINE_CHANNEL_TOKEN
@@ -615,7 +651,8 @@ curl -X POST https://api.line.me/v2/bot/message/push \
   -d '{"to":"'$LINE_USER_ID'","messages":[{"type":"text","text":"テスト"}]}'
 ```
 
-#### RSS取得エラー
+#### RSS 取得エラー
+
 ```bash
 # RSS設定確認
 ./scripts/dev-utils.sh validate-config
@@ -626,13 +663,13 @@ curl -X POST https://api.line.me/v2/bot/message/push \
 
 ### 8.3 よくある問題と解決策
 
-| 問題 | 原因 | 解決策 |
-|------|------|--------|
-| デプロイに失敗 | IAM権限不足 | IAMポリシー確認・追加 |
-| Lambda実行エラー | 環境変数未設定 | CloudFormation パラメータ確認 |
-| LINE通知が届かない | Webhook URL未設定 | LINE Console で URL設定 |
-| RSS取得できない | ネットワーク/SSL証明書 | Lambda VPC設定確認 |
-| 重複通知 | 履歴データ破損 | S3履歴ファイル削除・再作成 |
+| 問題                | 原因                    | 解決策                        |
+| ------------------- | ----------------------- | ----------------------------- |
+| デプロイに失敗      | IAM 権限不足            | IAM ポリシー確認・追加        |
+| Lambda 実行エラー   | 環境変数未設定          | CloudFormation パラメータ確認 |
+| LINE 通知が届かない | Webhook URL 未設定      | LINE Console で URL 設定      |
+| RSS 取得できない    | ネットワーク/SSL 証明書 | Lambda VPC 設定確認           |
+| 重複通知            | 履歴データ破損          | S3 履歴ファイル削除・再作成   |
 
 ### 8.4 ログ調査
 

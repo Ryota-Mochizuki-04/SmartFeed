@@ -4,7 +4,10 @@
   "config": {
     "max_feeds": 100,
     "max_articles_per_notification": 30,
-    "notification_hours": [12.5, 21.0],
+    "notification_hours": [
+      12.5,
+      21.0
+    ],
     "timezone": "Asia/Tokyo",
     "retry_config": {
       "max_retries": 3,

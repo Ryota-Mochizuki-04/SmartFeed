@@ -50,6 +50,7 @@ RSS LINE Notifier デプロイスクリプト
     -s, --stack STACK_NAME  CloudFormation スタック名 (デフォルト: rss-line-notifier)
     -p, --package-only      パッケージ作成のみ実行
     -d, --deploy-only       デプロイのみ実行 (パッケージは既存のものを使用)
+    -l, --lambda-only       Lambda関数のコードのみ更新
     -v, --validate          デプロイ前検証のみ実行
     --dry-run              実際のデプロイを行わずに確認のみ
 
@@ -69,6 +70,9 @@ RSS LINE Notifier デプロイスクリプト
 
     # パッケージのみ作成
     $0 --package-only
+
+    # Lambda関数のみ更新
+    $0 --lambda-only
 
     # デプロイ前確認
     $0 --dry-run
@@ -269,17 +273,29 @@ deploy_cloudformation() {
 
         log_info "既存スタックを更新します: $STACK_NAME"
 
-        aws cloudformation update-stack \
+        # CloudFormation更新を試行（変更がない場合はエラーになる）
+        if aws cloudformation update-stack \
             --stack-name "$STACK_NAME" \
             --template-body "file://$template_file" \
             --parameters "${parameters[@]}" \
             --capabilities CAPABILITY_NAMED_IAM \
-            --region "$REGION"
+            --region "$REGION" 2>&1; then
 
-        log_info "スタック更新の完了を待機しています..."
-        aws cloudformation wait stack-update-complete \
-            --stack-name "$STACK_NAME" \
-            --region "$REGION"
+            log_info "スタック更新の完了を待機しています..."
+            aws cloudformation wait stack-update-complete \
+                --stack-name "$STACK_NAME" \
+                --region "$REGION"
+        else
+            local exit_code=$?
+            if [ $exit_code -eq 254 ]; then
+                log_warning "テンプレートに変更がないため、CloudFormationの更新はスキップされました"
+                log_info "Lambda関数のコードのみを直接更新します"
+                update_lambda_functions_directly
+            else
+                log_error "CloudFormation更新でエラーが発生しました"
+                exit $exit_code
+            fi
+        fi
     else
         log_info "新規スタックを作成します: $STACK_NAME"
 
@@ -297,6 +313,29 @@ deploy_cloudformation() {
     fi
 
     log_success "CloudFormation スタックのデプロイが完了しました"
+}
+
+# Lambda関数のコードを直接更新
+update_lambda_functions_directly() {
+    log_info "Lambda関数のコードを直接更新します"
+
+    cd "$PROJECT_ROOT"
+
+    # Notifier Lambda更新
+    log_info "Notifier Lambda関数を更新中..."
+    aws lambda update-function-code \
+        --function-name "rss-notifier-prod" \
+        --zip-file fileb://notifier-deployment.zip \
+        --region "$REGION" > /dev/null
+
+    # Webhook Lambda更新
+    log_info "Webhook Lambda関数を更新中..."
+    aws lambda update-function-code \
+        --function-name "rss-webhook-prod" \
+        --zip-file fileb://webhook-deployment.zip \
+        --region "$REGION" > /dev/null
+
+    log_success "Lambda関数のコード更新が完了しました"
 }
 
 # デプロイ結果表示
@@ -342,6 +381,7 @@ EOF
 main() {
     local package_only=false
     local deploy_only=false
+    local lambda_only=false
     local validate_only=false
     local dry_run=false
 
@@ -366,6 +406,10 @@ main() {
                 ;;
             -d|--deploy-only)
                 deploy_only=true
+                shift
+                ;;
+            -l|--lambda-only)
+                lambda_only=true
                 shift
                 ;;
             -v|--validate)
@@ -415,6 +459,13 @@ main() {
 
     if [ "$package_only" = true ]; then
         log_success "パッケージ作成が完了しました"
+        exit 0
+    fi
+
+    # Lambda関数のみ更新
+    if [ "$lambda_only" = true ]; then
+        update_lambda_functions_directly
+        log_success "Lambda関数の更新が完了しました"
         exit 0
     fi
 

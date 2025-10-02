@@ -342,21 +342,47 @@ class RSSAnalyzer:
             return articles
 
     def _classify_article_type(self, article: Dict) -> str:
-        """記事タイプ自動分類"""
+        """
+        記事タイプ自動分類（v2.1強化版）
+        rss-line-notifierの高度な分類ロジックを統合
+
+        Returns:
+            str: 記事タイプアイコン（🔥トレンド, ⚡技術解説, 🛠️ツール, 📊分析, 📰ニュース）
+        """
         try:
-            text = f"{article['title']} {article.get('description', '')}"
-            text_lower = text.lower()
+            title = article.get('title', '')
+            description = article.get('description', '')
+            feed_title = article.get('feed_title', '')
 
-            # キーワードマッチング
-            for article_type, keywords in self.ARTICLE_TYPE_KEYWORDS.items():
-                for keyword in keywords:
-                    if keyword in text_lower:
-                        return article_type
+            title_lower = title.lower()
+            desc_lower = description.lower()
+            feed_lower = feed_title.lower()
 
-            return '記事'  # デフォルト
+            # トレンド系キーワード（rss-line-notifierから移植）
+            trending_keywords = ["話題", "人気", "注目", "バズ", "話題沸騰", "急上昇", "ランキング"]
+            if any(keyword in title for keyword in trending_keywords) or "popular" in title_lower or "trend" in title_lower:
+                return "🔥"
+
+            # 技術解説系キーワード
+            technical_keywords = ["解説", "入門", "基礎", "初心者", "学習", "理解", "仕組み", "原理"]
+            if any(keyword in title for keyword in technical_keywords) or "tutorial" in title_lower or "guide" in title_lower:
+                return "⚡"
+
+            # ツール・ライブラリ系キーワード
+            tool_keywords = ["ツール", "ライブラリ", "フレームワーク", "アプリ", "サービス", "使い方", "導入"]
+            if any(keyword in title for keyword in tool_keywords) or "tool" in title_lower or "library" in title_lower:
+                return "🛠️"
+
+            # 分析・調査系キーワード
+            analysis_keywords = ["分析", "調査", "レポート", "統計", "データ", "比較", "検証", "考察"]
+            if any(keyword in title for keyword in analysis_keywords) or "analysis" in title_lower or "report" in title_lower:
+                return "📊"
+
+            # デフォルトはニュース
+            return "📰"
 
         except Exception:
-            return '記事'
+            return "📰"
 
     def _estimate_difficulty(self, article: Dict) -> str:
         """難易度推定"""
@@ -399,28 +425,39 @@ class RSSAnalyzer:
             return '3分'
 
     def _calculate_priority_score(self, article: Dict, article_type: str, difficulty: str) -> float:
-        """優先順位スコア計算"""
+        """
+        優先順位スコア計算（v2.1強化版）
+        rss-line-notifierの高度なスコアリングアルゴリズムを統合
+        """
         try:
             score = 50.0  # ベーススコア
+            title = article.get('title', '')
 
-            # 記事タイプによる重み付け
+            # 記事タイプによる重み付け（アイコンベース）
             type_weights = {
-                'トレンド': 30,
-                'ニュース': 25,
-                '技術解説': 20,
-                'ツール': 15,
-                '分析': 10,
-                '記事': 5
+                '🔥': 30,  # トレンド（最高優先度）
+                '📰': 25,  # ニュース
+                '⚡': 20,  # 技術解説
+                '🛠️': 15,  # ツール
+                '📊': 10,  # 分析
             }
-            score += type_weights.get(article_type, 0)
+            score += type_weights.get(article_type, 5)
 
             # 難易度による重み付け
             difficulty_weights = {
-                '初級': 15,
+                '初級': 15,  # 初心者向けは優先度高
                 '中級': 10,
                 '上級': 5
             }
             score += difficulty_weights.get(difficulty, 0)
+
+            # rss-line-notifierから移植：トレンドキーワードでスコア加算
+            if any(keyword in title for keyword in ["人気", "話題", "注目"]):
+                score += 10
+
+            # 実践的なキーワードでスコア加算
+            if any(keyword in title for keyword in ["実践", "実装", "作り方", "やり方"]):
+                score += 5
 
             # 記事の新しさ（24時間以内の記事は高スコア）
             try:
@@ -429,18 +466,20 @@ class RSSAnalyzer:
                     published_dt = datetime.fromisoformat(published_str.replace('Z', '+00:00'))
                     hours_ago = (datetime.now(timezone.utc) - published_dt).total_seconds() / 3600
                     if hours_ago <= 6:
-                        score += 20
+                        score += 20  # 6時間以内は最優先
                     elif hours_ago <= 12:
-                        score += 10
+                        score += 15  # 12時間以内
                     elif hours_ago <= 24:
-                        score += 5
+                        score += 10  # 24時間以内
             except:
                 pass
 
             # タイトルの長さ（適度な長さが好ましい）
-            title_len = len(article.get('title', ''))
+            title_len = len(title)
             if 20 <= title_len <= 60:
                 score += 5
+            elif title_len > 80:
+                score -= 5  # 長すぎるタイトルは減点
 
             return min(100.0, max(0.0, score))
 

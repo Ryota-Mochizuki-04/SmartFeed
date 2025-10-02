@@ -3,21 +3,24 @@
 ## 💾 ストレージアーキテクチャ概要
 
 ### ストレージ戦略
-- **メインストレージ**: Amazon S3 (JSON形式でのファイルベース管理)
+
+- **メインストレージ**: Amazon S3 (JSON 形式でのファイルベース管理)
 - **設計思想**: シンプル・軽量・コスト効率重視
 - **データ形式**: JSON (可読性・メンテナンス性・互換性)
 - **アクセスパターン**: 低頻度読み書き、小サイズデータ
 
-### なぜS3 + JSONか？
+### なぜ S3 + JSON か？
+
 1. **シンプルさ**: データベース運用コスト削減
 2. **コスト効率**: 小規模データに最適
 3. **可用性**: 99.999999999% (11 9's) の耐久性
 4. **バックアップ**: 自動バージョニング対応
-5. **スケーラビリティ**: 将来的なDB移行も容易
+5. **スケーラビリティ**: 将来的な DB 移行も容易
 
-## 📁 S3バケット設計
+## 📁 S3 バケット設計
 
 ### バケット構成
+
 ```
 rss-line-notifier-v1-{AccountId}/
 ├── rss-list.json                    # RSS設定マスター
@@ -35,6 +38,7 @@ rss-line-notifier-v1-{AccountId}/
 ```
 
 ### バケットポリシー設計
+
 ```json
 {
   "Version": "2012-10-17",
@@ -63,10 +67,7 @@ rss-line-notifier-v1-{AccountId}/
           "arn:aws:iam::{AccountId}:role/WebhookLambdaRole"
         ]
       },
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject"
-      ],
+      "Action": ["s3:GetObject", "s3:PutObject"],
       "Resource": "arn:aws:s3:::rss-line-notifier-v1-{AccountId}/*"
     }
   ]
@@ -75,9 +76,10 @@ rss-line-notifier-v1-{AccountId}/
 
 ## 📋 データモデル設計
 
-### 1. RSS設定データ (rss-list.json)
+### 1. RSS 設定データ (rss-list.json)
 
 #### データ構造
+
 ```json
 {
   "version": "2.1",
@@ -125,21 +127,22 @@ rss-line-notifier-v1-{AccountId}/
 
 #### フィールド定義
 
-| フィールド | 型 | 必須 | 説明 |
-|------------|----|----|------|
-| **version** | string | ✅ | データスキーマバージョン |
-| **updated_at** | ISO8601 | ✅ | 最終更新日時（UTC） |
-| **feeds[].id** | string | ✅ | 一意のフィードID |
-| **feeds[].url** | string | ✅ | RSSフィードURL |
-| **feeds[].title** | string | ✅ | フィード表示名 |
-| **feeds[].category** | string | ✅ | カテゴリ分類 |
-| **feeds[].enabled** | boolean | ✅ | 有効/無効フラグ |
-| **feeds[].priority** | integer | ❌ | 表示優先度（1-10） |
-| **feeds[].added_at** | ISO8601 | ✅ | 追加日時 |
-| **feeds[].last_checked** | ISO8601 | ❌ | 最終チェック日時 |
-| **feeds[].success_rate** | float | ❌ | 成功率（0.0-1.0） |
+| フィールド               | 型      | 必須 | 説明                     |
+| ------------------------ | ------- | ---- | ------------------------ |
+| **version**              | string  | ✅   | データスキーマバージョン |
+| **updated_at**           | ISO8601 | ✅   | 最終更新日時（UTC）      |
+| **feeds[].id**           | string  | ✅   | 一意のフィード ID        |
+| **feeds[].url**          | string  | ✅   | RSS フィード URL         |
+| **feeds[].title**        | string  | ✅   | フィード表示名           |
+| **feeds[].category**     | string  | ✅   | カテゴリ分類             |
+| **feeds[].enabled**      | boolean | ✅   | 有効/無効フラグ          |
+| **feeds[].priority**     | integer | ❌   | 表示優先度（1-10）       |
+| **feeds[].added_at**     | ISO8601 | ✅   | 追加日時                 |
+| **feeds[].last_checked** | ISO8601 | ❌   | 最終チェック日時         |
+| **feeds[].success_rate** | float   | ❌   | 成功率（0.0-1.0）        |
 
 #### カテゴリマスター
+
 ```python
 FEED_CATEGORIES = {
     "プログラミング": {
@@ -178,6 +181,7 @@ FEED_CATEGORIES = {
 ### 2. 通知履歴データ (notified-history.json)
 
 #### データ構造
+
 ```json
 {
   "version": "2.1",
@@ -225,19 +229,20 @@ FEED_CATEGORIES = {
 
 #### フィールド定義
 
-| フィールド | 型 | 必須 | 説明 |
-|------------|----|----|------|
-| **history[].id** | string | ✅ | 通知履歴ID |
-| **history[].title** | string | ✅ | 記事タイトル |
-| **history[].link** | string | ✅ | 記事URL（一意キー） |
-| **history[].feed_id** | string | ✅ | 元フィードID |
-| **history[].notified_at** | ISO8601 | ✅ | 通知日時 |
-| **history[].article_hash** | string | ✅ | 記事内容ハッシュ |
-| **history[].batch_id** | string | ✅ | 通知バッチID |
+| フィールド                 | 型      | 必須 | 説明                 |
+| -------------------------- | ------- | ---- | -------------------- |
+| **history[].id**           | string  | ✅   | 通知履歴 ID          |
+| **history[].title**        | string  | ✅   | 記事タイトル         |
+| **history[].link**         | string  | ✅   | 記事 URL（一意キー） |
+| **history[].feed_id**      | string  | ✅   | 元フィード ID        |
+| **history[].notified_at**  | ISO8601 | ✅   | 通知日時             |
+| **history[].article_hash** | string  | ✅   | 記事内容ハッシュ     |
+| **history[].batch_id**     | string  | ✅   | 通知バッチ ID        |
 
 ## 🔧 データアクセス層設計
 
-### S3操作クラス
+### S3 操作クラス
+
 ```python
 import boto3
 import json
@@ -371,6 +376,7 @@ class S3DataManager:
 ```
 
 ### データモデルクラス
+
 ```python
 from dataclasses import dataclass
 from typing import List, Optional
@@ -418,6 +424,7 @@ class NotificationHistory:
 ## 🔍 データ検索・フィルタリング
 
 ### 履歴検索機能
+
 ```python
 class HistorySearchManager:
     """履歴検索管理"""
@@ -454,10 +461,11 @@ class HistorySearchManager:
 ## 🔐 データセキュリティ
 
 ### 暗号化設定
+
 ```yaml
 S3 Encryption:
   Type: "AES256"
-  KMS: false  # コスト考慮でAES256を選択
+  KMS: false # コスト考慮でAES256を選択
 
 Lambda Environment Variables:
   Encryption: true
@@ -465,6 +473,7 @@ Lambda Environment Variables:
 ```
 
 ### アクセスパターン
+
 ```python
 # 読み取り専用操作
 READ_OPERATIONS = [
@@ -489,6 +498,7 @@ FORBIDDEN_OPERATIONS = [
 ## 📊 パフォーマンス最適化
 
 ### キャッシング戦略
+
 ```python
 import functools
 import time
@@ -528,6 +538,7 @@ def load_rss_config_cached():
 ```
 
 ### バッチ処理最適化
+
 ```python
 def batch_update_feeds(feed_updates: List[Dict]) -> bool:
     """フィード情報一括更新"""
@@ -554,6 +565,7 @@ def batch_update_feeds(feed_updates: List[Dict]) -> bool:
 ## 🚀 将来の拡張設計
 
 ### マルチユーザー対応
+
 ```python
 class MultiUserDataManager(S3DataManager):
     """マルチユーザー対応データ管理"""
@@ -581,7 +593,8 @@ class MultiUserDataManager(S3DataManager):
             return self._create_user_default_config()
 ```
 
-### DynamoDB移行パス
+### DynamoDB 移行パス
+
 ```python
 # 将来的なDynamoDB移行時の互換性維持
 class DynamoDBDataManager:
